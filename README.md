@@ -1,7 +1,7 @@
 # Project Hydroponic farming
 This python package aims to provide some basic tools to simulate hydroponic plant growing.🌱 Hydroponics is a farming method where plants grow without soil and instead use a solution containing the required mineral nutriments.👨‍🌾 This technique is already widely used but is development for farming on mars.🪐🚀
 
-In particular, you can control the concentration of minerals and the pH of the hydroponic solution.
+In particular, this package allows you to simulate the concentration of minerals and the pH of hydroponic solutions.
 See the "Basic Usage" section below and "example.ipynb" document for further examples and explainantions of the package.
 
 Learn more about hydropics with the following links: 
