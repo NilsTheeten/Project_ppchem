@@ -1,23 +1,70 @@
-# Project_ppchem
-This repository contains the ppchem project: Hydroponics
-Description: Hydroponics is a type of horticulture and a subset of hydroculture which involves growing plants, usually crops or medicinal plants, without soil, by using water-based mineral nutrient solutions in an artificial environment. Terrestrial or aquatic plants may grow freely with their roots exposed to the nutritious liquid or the roots may be mechanically supported by an inert medium such as perlite, gravel, or other substrates.
+# Project Hydroponic farming
+This python package aims to provide some basic tools to simulate hydroponic plant growing.🌱 Hydroponics is a farming method where plants grow without soil and instead use a solution containing the required mineral nutriments.👨‍🌾 This technique is already widely used but is development for farming on mars.🪐🚀
 
-Uses: More efficient way of growing crops. Researched as way of growing crops on Mars (Elon Musk) https://www.nasa.gov/science-research/nasa-plant-researchers-explore-question-of-deep-space-food-crops/
+In particular, you can control the concentration of minerals and the pH of the hydroponic solution.
+See the "Basic Usage" section below and "example.ipynb" document for further examples and explainantions of the package.
 
-Important factors: pH --> depending on plant different pH is needed (in general 6-7) concentration of different salts (enough of some salt, not too much NaCl) solubility ( no precipitation of usefull salts) price (optimize expenses) needs of the plant quantity of salts contained in a plant
+Learn more about hydropics with the following links: 
+ - [Wikipedia](https://en.wikipedia.org/wiki/Hydroponics#:~:text=Hydroponics%20is%20a%20type%20of,solutions%20in%20an%20artificial%20environment)
+ - [USDA](https://www.nal.usda.gov/farms-and-agricultural-production-systems/hydroponics)
+ - [NASA](https://www.nasa.gov/science-research/nasa-plant-researchers-explore-question-of-deep-space-food-crops/)
 
-Plants: Patato Sweet patato Lettuce (Iceberg, Butterhead) soybeans
 
-Atoms in the solution: (see Hoagland solution) N 210 ppm P 31 ppm S 64 ppm Cl 0.14 ppm / 0.65 ppm B 0.11 ppm / 0.5 ppm Na 0 ppm / 0.023 ppm / 1.2 ppm* Mg 48.6 ppm K 235 ppm Ca 200 ppm / 160 ppm Mn 0.11 ppm / 0.5 ppm Zn 0.023 ppm / 0.05 ppm Cu 0.014 ppm / 0.02 ppm Mo 0.018 ppm / 0.048 ppm / 0.011 ppm Fe 1 ppm / 5 ppm / 2.9 ppm*
 
-Salts in the solution: Potassium nitrate, KNO3 Calcium nitrate tetrahydrate, Ca(NO3)2•4H2O Magnesium sulfate heptahydrate, MgSO4•7H2O Potassium dihydrogen phosphate, KH2PO4 or Ammonium dihydrogen phosphate, (NH4)H2PO4 Boric acid, H3BO3 Manganese chloride tetrahydrate, MnCl2•4H2O Zinc sulfate heptahydrate, ZnSO4•7H2O Copper sulfate pentahydrate, CuSO4•5H2O Molybdic acid monohydrate, H2MoO4•H2O or Sodium molybdate dihydrate, Na2MoO4•2H2O Ferric tartrate or Iron(III)-EDTA− or Iron chelate (Fe-EDDHA−)
 
-Idea: Provide tools to help manage hydroponic plantations
+#1. Installation
+The following pip command can be used to install the python package. Please use Python versions (...)
+```
+pip -m install Pydroponics
+```
+Be aware, the package uses the following dependencies:
+ * Numpy
+ * Pandas
+ * Openpyxl
+ * Math
+ * ...
 
-Quantity of salts to add, when
-Where to buy the salt (cheapest price)
-Regulate the pH of the solution
-Bonus: provide security indications
+
+
+##2. Basic Usage
+The package uses python dictionaries to store the concentration of the different salts/ion in the solution. By default concentrations are given in [g/L]. 
+
+To determine the quantity of each salt to add to the solution to obain the desired concentration of each ion one can use the `make_solution` function. This function checks the solubility of the salt. 
+```
+ion_composition = {"K+":0.1, "Cl-": 0.3, "H2PO4(-)":0.5, "Ca(2+)":0.4} #desired concentrations in [g/L]
+volume = 10 #L
+forbidden_ions = ["Li+", "SO4(2-)"]
+
+salts_to_add = make_solution(ion_composition, volume, forbidden_ions)
+print(salts_to_add)
+```
+
+One can visualise the evolution of the concentration of the ions as the plant grows with the `plot_graph` function.
+```
+volume = 5 #L
+...
+plot_graph(...)
+```
+
+One can determine the pH of the solution given the concentration  of the ions with the `get_pH`function:
+```
+solution = {"K+":0.1, "Cl-": 0.3, "H2PO4(-)":0.5, "Ca(2+)":0.4}
+pH = get_pH(solution)
+print(pH)
+```
+See the "example.ipynb" document for a more complete examples.
+
+##3. Datasets
+This package uses data from the PRIF17 and...
+
+
+##4. Licence and References
+This package is under MIT license.
+
+Please click on the MIT sign for further information
+
+
+
 Implementation/useful tools:
 
 Modelisations of salt concentrations/pH (needs to be 6-7, depends on plant) over time
