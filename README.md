@@ -10,13 +10,14 @@ Learn more about hydropics with the following links:
  - [NASA](https://www.nasa.gov/science-research/nasa-plant-researchers-explore-question-of-deep-space-food-crops/)
 
 
+----
 
-
-#1. Installation
+## 1. Installation  
 The following pip command can be used to install the python package. Please use Python versions (...)
 ```
 pip -m install Pydroponics
 ```
+  
 Be aware, the package uses the following dependencies:
  * Numpy
  * Pandas
@@ -25,8 +26,8 @@ Be aware, the package uses the following dependencies:
  * ...
 
 
-
-##2. Basic Usage
+----
+## 2. Basic Usage  
 The package uses python dictionaries to store the concentration of the different salts/ion in the solution. By default concentrations are given in [g/L]. 
 
 To determine the quantity of each salt to add to the solution to obain the desired concentration of each ion one can use the `make_solution` function. This function checks the solubility of the salt. 
@@ -54,11 +55,12 @@ print(pH)
 ```
 See the "example.ipynb" document for a more complete examples.
 
-##3. Datasets
+## 3. Datasets  
 This package uses data from the PRIF17 and...
 
+----
 
-##4. Licence and References
+## 4. Licence and References  
 This package is under MIT license.
 
 Please click on the MIT sign for further information
