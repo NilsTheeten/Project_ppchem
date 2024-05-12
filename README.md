@@ -58,6 +58,8 @@ See the "example.ipynb" document for a more complete examples.
 ## 3. Datasets  
 This package uses data from the PRIF17 and...
 
+Some solutions and plant compositions are predefined (bell pepper 🫑, cucumber 🥒 and eggplant 🍆), please define a new dict or complete the excel file to use other solutions and new plants.
+
 ----
 
 ## 4. Licence and References  
