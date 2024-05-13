@@ -1,10 +1,77 @@
+"""
+This file contains the most basic functions used in the project.
+In particular, the file contains functions to:
+- Import user data from an Excel file
+- Calculate the molar mass of a salt
+- Get the solubility product constant (Ksp) and solubility product (Q) of a salt
+- Convert salt concentrations to ion concentrations
+- Make a solution given the ion concentration wanted
+"""
+
 #Imports
 import re
 import csv
 import pandas as pd
+from sympy import symbols, Eq, solve
 
 
 # ----- Import User Data from Excel file -------------
+
+def import_solution_data(solution_name: str) -> dict:
+    """
+    Import user data from the Excel file and returns it as a dictionary.
+
+    Args:
+        solution_name (str): Name of the column in the Excel file.
+
+    Returns:
+        dict: Dictionary containing the concentration of the ions [g/L] in the solution.
+    """
+    # Read the Excel file
+    file_name = "data/UserData.xlsx"
+    df = pd.read_excel(file_name, sheet_name="My Solution", skiprows=1)
+    # Create a dictionary using zip and dictionary comprehension
+    ion_solution_dict = dict(zip(df['Ions'], df[solution_name]))
+    return ion_solution_dict
+
+def predefined_solutions(plant:str ) -> dict:
+    """
+    Import user data from the Excel file and returns it as a dictionary.
+
+    Args:
+        plant (str): Name of the plant. Can either be 'Eggplant', 'Tomato' or 'Cucumber'.
+
+    Returns:
+        dict: Dictionary containing the concentration of the ions [g/L] in the solution.
+    """
+    available_plants = ['Eggplant', 'Tomato', 'Cucumber']
+    if plant not in available_plants:
+        raise ValueError(f"Plant {plant} not found. Available plants are {available_plants}.")
+    else:
+        # Read the Excel file
+        file_name = "data/UserData.xlsx"
+        df = pd.read_excel(file_name, sheet_name="Optimal Solution", skiprows=0)
+        # Create a dictionary using zip and dictionary comprehension
+        ion_solution_dict = dict(zip(df['Formula'], df['c [mol/L] '+plant]))
+        return ion_solution_dict
+
+def import_plant_data(plant_name:str) -> dict:
+    """_summary_
+
+    Args:
+        plant (str): name of the column where the data is located
+        
+    Returns:
+        dict: dictionary containing the needs of the plant for each ion [g] for a full growth cycle
+    """
+    # Read the Excel file
+    file_name = "data/UserData.xlsx"
+    df = pd.read_excel(file_name, sheet_name="My plant", skiprows=1)
+    # Create a dictionary using zip and dictionary comprehension
+    plant_dict = dict(zip(df['Ions'], df[plant_name]))
+    return plant_dict
+
+
 
 # ----- Molar mass calculator ------------------------
 
@@ -341,3 +408,61 @@ def salt2ions(solution: dict, volume: float = 1, unit: str = "g") -> dict:
         return ions_in_solution
     else:
         raise ValueError("'Unit' must be 'g' or 'mol'.")
+
+#Make a solution given the ion concentration wanted
+def make_solution (ions_in_solution :dict, forbidden_ions:list, volume:float, )->dict:
+    '''
+    Returns how much of each salt [g] to add to a solution of certain volume [L]
+    to obtain a certain concentration of ions [g/L]
+    
+    Args:
+        ions_in_solution (dict): dictionary with keys as ions and values as the concentration in g/L
+        forbidden_ions (list): list of ions that cannot be in the solution
+        volume (float): volume of the solution in L
+    
+    Returns:
+        dict: dictionary with keys as salt names and values as the amount of salt needed in g
+    '''
+    
+    if set(ions_in_solution.keys()).intersection(forbidden_ions) != set() :
+        raise ValueError("Forbidden ions are in the solution")
+    
+    molar_ions = {ion: ions_in_solution[ion]/get_molar_mass(ion) for ion in ions_in_solution}
+    # Define variables
+    possible_salts = []
+    for salt in dict_salts_trad.keys():
+        for ion in dict_salts_trad[salt]:
+            if (ion in molar_ions) and (salt not in possible_salts) and (len(set(dict_salts_trad[salt].keys()).intersection(forbidden_ions)) == 0):
+                possible_salts.append(salt)
+    
+    for salt in possible_salts[:]:
+        if get_Ksp(salt) <= get_Q_solubility(salt, molar_ions):
+            possible_salts.remove(salt)
+    
+    #NB variables == NB equations
+    final_salts = []
+    nb_eq = len(molar_ions.keys())
+    for ion in molar_ions.keys():
+        for salt in possible_salts:
+            if ion in dict_salts_trad[salt] and salt not in final_salts:
+                final_salts.append(salt)
+                break
+                
+    variables = symbols(final_salts)
+        
+    #Set up equations
+    equations = []
+    for ion in molar_ions.keys():
+        lhs = 0
+        rhs = molar_ions[ion] * volume
+        for salt in final_salts:
+            if ion in dict_salts_trad[salt]:
+                lhs += dict_salts_trad[salt][ion] * symbols(salt)
+        equation = Eq(lhs, rhs)
+        equations.append(equation)     
+    
+    #Solve equations
+    solution = solve(equations, variables)
+    mass_salts = {salt: solution[symbols(salt)]*get_molar_mass(salt) for salt in final_salts}
+        
+    return mass_salts  
