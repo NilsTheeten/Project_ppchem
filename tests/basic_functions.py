@@ -14,7 +14,6 @@ import csv
 import pandas as pd
 from sympy import symbols, Eq, solve
 
-
 # ----- Import User Data from Excel file -------------
 
 def import_solution_data(solution_name: str) -> dict:
@@ -466,4 +465,3 @@ def make_solution (ions_in_solution :dict, forbidden_ions:list, volume:float, )-
     mass_salts = {salt: solution[symbols(salt)]*get_molar_mass(salt) for salt in final_salts}
         
     return mass_salts  
-
