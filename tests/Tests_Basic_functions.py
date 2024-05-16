@@ -1,6 +1,6 @@
 # Importing functions from Basic_functions.py file
 
-import basic_functions as bf
+import src.basic_functions as bf
 
 
 #--------------------------- Test get_molar_mass() ------------------------------
@@ -10,7 +10,6 @@ def test_molar_mass ():
         assert round(bf.get_molar_mass(mol[i]),3) == 164.086, "Test failed: did not understand {mol[i]}"
         
     
-test_molar_mass()
 
 
 #--------------------------- Test get_Ksp() ------------------------------
@@ -20,4 +19,3 @@ def test_get_Ksp():
         print(list[i])
         print(bf.get_Ksp(list[i]))
 
-test_get_Ksp()
