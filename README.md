@@ -1,4 +1,4 @@
-![Project Logo](assets/banner.png)
+![Project Logo](assets/hydroponics_illustration.jpeg)
 
 ![Coverage Status](assets/coverage-badge.svg)
 
