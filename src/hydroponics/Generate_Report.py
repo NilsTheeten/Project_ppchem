@@ -11,7 +11,8 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 import matplotlib.pyplot as plt
 import numpy as np
 
-from Basic_functions import salt2ions, make_solution
+from .Basic_functions import salt2ions, make_solution
+from .pH_functions import *
 
 # Auxiliar functions
 def merge_dicts(dict1, dict2, ions_of_interest = "all"):
@@ -60,7 +61,7 @@ def generate_report(
 
     Args:
         plant_name (str): The name of the plant for which the hydroponic solution simulation is conducted.
-        required_nutriments (dict): A dictionary containing the required nutriments for the specified plant for a full growth [g].
+        required_nutriments (dict): A dictionary containing the required nutriments (ions) for the specified plant for a full growth [g].
         solution_composition (dict): A dictionary representing the composition of the hydroponic solution [g/L] for each ion.
         solution_volume (float): The volume of the hydroponic solution [L].
         ions_of_interest (list): A list of ions for which the concentration is of interest.

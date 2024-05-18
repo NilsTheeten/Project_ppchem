@@ -213,14 +213,14 @@ python_colors = ['b', 'g', 'c', 'm', 'y', 'k',
                  'mediumblue', 'darkorange', 'limegreen', 'indianred', 'violet', 'sienna', 'deepskyblue', 'peru', 'gold']
 
 #Plot the evolution of the solution
-def plot_graph(solution: dict, input_type:str, plant:str, growth_time:float, volume:float = 1, ions_of_interest: list = "all"):
+def plot_graph(solution: dict, input_type:str, plant:dict, growth_time:float, volume:float = 1, ions_of_interest: list = "all"):
     """
     Creates graph of salts in hydroponic solution
 
     Args:
         salts (dict): Initial concentration [g/L] of the ions in the solution.
         input_type (str): Type of input data, either "salt" or "ion".
-        plant (str): name of the plant (e.g. Tomato, Cucumber, Eggplant).
+        plant (dict): the plant requirements to fully grow [g].
         growth_time (float): Expected growth time of the plant [days].
         volume (float, optional): Volume of the solution [L]. Defaults to 1.
         ions_of_interest (list, optional): list of ions to plot. Defaults to "all". 
@@ -244,7 +244,7 @@ def plot_graph(solution: dict, input_type:str, plant:str, growth_time:float, vol
     #plt.yscale('log')
     
     
-    xlength = analyse_nutriments(solution, plant, growth_time, volume, input_type_solution = 'ion')[1]
+    #xlength = analyse_nutriments(solution, plant, growth_time, volume, input_type_solution = 'ion')[1]
     
     #Handle Input type
     if input_type == "salt":
