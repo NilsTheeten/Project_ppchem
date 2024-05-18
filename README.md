@@ -41,7 +41,7 @@ This usage example shows how to quickly use the package's main functionality: `g
 
 
 ## 1. Installation 👩‍💻
-The following pip command can be used to install the python package. Please use Python versions (...)
+The following pip command can be used to install the python package. The package was made with python 3.10
 ```
 pip -m install hydroponics
 ```
