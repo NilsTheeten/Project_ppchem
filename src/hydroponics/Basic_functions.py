@@ -313,7 +313,7 @@ def get_Ksp(salt_name: str) -> float:
     Returns:
         float: The solubility product constant (Ksp) of the salt.
     """
-    file_name_solubility = 'Solubility_data.csv'
+    file_name_solubility = 'data/Solubility_data.csv'
     df_solubility = pd.read_csv(file_name_solubility)
     
     row = df_solubility.loc[df_solubility["Formula"] == salt_name].values.tolist() # [[name, formula, value]]

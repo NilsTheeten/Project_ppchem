@@ -13,7 +13,7 @@ import math
 import matplotlib.pyplot as plt
 import os
 import numpy as np
-from Basic_functions import salt2ions
+from Basic_functions import salt2ions, dict_salts_trad
 
 # ----------------- Analyse the solution -----------------
 
@@ -145,18 +145,23 @@ def check_supply_elements(ions_solution, plant) -> bool:
 # ----------------- Evolution of the solution -----------------
 
 #Update the solution after 1 day of growth
-def update_sol(ions_solution: dict, plant: dict) -> dict:
+def update_sol(ions_solution: dict, plant: dict, volume: float) -> dict:
     """
     updates the salts in solutions after 1 day of growth and checks the solubility of the new solution
+    
     Args:
         ions_solution: dictionary with keys as ions and values as the amount of ions in the solution [g/L]
         plant: dictionary with keys as ions and values as the amount of ions needed for 1 day for the plant [g]
+        
+    Returns:
+        dictionary: updated ions_solution after 1 day of growth and checking the solubility
     """
-    for ion in plant:
-        if ions_solution[ion] <= plant[ion]:  
+    volume_plant = {ion: plant[ion]/volume for ion in plant.keys()}
+    for ion in volume_plant:
+        if ions_solution[ion] <= volume_plant[ion]:  
             ions_solution[ion] = 0
         else:      
-            ions_solution[ion] -= plant[ion]
+            ions_solution[ion] -= volume_plant[ion]
     
     if check_solubility(ions_solution, input_type="ion"):
         return ions_solution  
