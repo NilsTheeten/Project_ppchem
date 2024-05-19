@@ -9,10 +9,12 @@ requires-python = ">=3.10"
 license = {file = "LICENSE"}
 description = "Simulation of hydroponic farming"
 dependencies = [
-    # "rdkit",
+    "numpy","sympy","reportlab","pandas"
 ]
 authors = [
-    {name = "Nils Theeten", email = "nils.theeten@epfl.ch"}
+    {name = "Nils Theeten", email = "nils.theeten@epfl.ch"},
+    {name = "Mathieu Penn", email = "mathieu.penn@epfl.ch"}
+    
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
