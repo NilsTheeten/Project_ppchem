@@ -10,6 +10,7 @@ In particular, the file contains functions to:
 
 #Imports
 import re
+import os
 import csv
 import pandas as pd
 from sympy import symbols, Eq, solve
@@ -71,6 +72,13 @@ def import_plant_data(plant_name:str) -> dict:
     plant_dict = dict(zip(df['Ions'], df[plant_name]))
     return plant_dict
 
+
+def load_from_data(file_name):
+    # Get the directory of the current file
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    # Construct the absolute path to the CSV file
+    csv_path = os.path.join(current_dir, 'data', file_name)
+    return csv_path
 
 
 # ----- Molar mass calculator ------------------------
@@ -313,8 +321,8 @@ def get_Ksp(salt_name: str) -> float:
     Returns:
         float: The solubility product constant (Ksp) of the salt.
     """
-    file_name_solubility = 'data/Solubility_data.csv'
-    df_solubility = pd.read_csv(file_name_solubility)
+    solubility_file = load_from_data("solubility.csv")
+    df_solubility = pd.read_csv(solubility_file)
     
     row = df_solubility.loc[df_solubility["Formula"] == salt_name].values.tolist() # [[name, formula, value]]
     Ksp = 0

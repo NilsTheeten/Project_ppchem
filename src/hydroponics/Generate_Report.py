@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from .Basic_functions import salt2ions, make_solution
-from .pH_functions import *
+#from .pH_functions import *
 
 # Auxiliar functions
 def merge_dicts(dict1, dict2, ions_of_interest = "all"):

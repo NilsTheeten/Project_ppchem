@@ -1,6 +1,6 @@
 [build-system] 
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "hydroponics"
@@ -9,10 +9,12 @@ requires-python = ">=3.10"
 license = {file = "LICENSE"}
 description = "Simulation of hydroponic farming"
 dependencies = [
-    # "rdkit",
+    "numpy","sympy","reportlab","pandas","matplotlib"
 ]
 authors = [
-    {name = "Nils Theeten", email = "nils.theeten@epfl.ch"}
+    {name = "Nils Theeten", email = "nils.theeten@epfl.ch"},
+    {name = "Mathieu Penn", email = "mathieu.penn@epfl.ch"}
+    
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -25,6 +27,14 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+]
+keywords = ["hydroponics",
+        "plant growth",
+        "pH calculation",
+        "solution solubility",
+        "plant simulation",
+        "solution maker"
+
 ]
 dynamic = ["version"]
 
