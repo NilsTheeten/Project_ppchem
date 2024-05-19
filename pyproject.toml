@@ -28,6 +28,14 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
 ]
+keywords = ["hydroponics",
+        "plant growth",
+        "pH calculation",
+        "solution solubility",
+        "plant simulation",
+        "solution maker"
+
+]
 dynamic = ["version"]
 
 [project.urls]
