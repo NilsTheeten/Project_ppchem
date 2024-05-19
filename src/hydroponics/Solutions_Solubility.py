@@ -13,7 +13,7 @@ import math
 import matplotlib.pyplot as plt
 import os
 import numpy as np
-from Basic_functions import salt2ions, dict_salts_trad
+from .Basic_functions import get_molar_mass, get_Ksp, get_Q_solubility, salt2ions, dict_salts_trad
 
 # ----------------- Analyse the solution -----------------
 
@@ -23,7 +23,7 @@ def check_solubility(salts_dict: dict, input_type: str = "salt", output_type: st
     Check if the salts mixture is soluble.
 
     Args:
-        salts_dict (dict): Dictionary with keys as salt names and values as concentrations.
+        salts_dict (dict): Dictionary with keys as salt names and values as concentrations [g/L].
         input_type (str): Type of input data, either "salt" or "ion".
         output_type (str): Type of output data, either "bool", "analysis", or "update".
 
@@ -39,35 +39,31 @@ def check_solubility(salts_dict: dict, input_type: str = "salt", output_type: st
     if output_type not in valid_output_types:
         raise ValueError("Invalid output type. Please choose either 'bool', 'analysis', or 'update'.")
     
-    # Load data from Excel file containing Ksp values
-    file_path = r"C:/Users/nilst/Documents/EPFL/BA_4/ppchem/Project/User_Input_modified.xlsx"
-    df_excel = pd.read_excel(file_path, sheet_name="Sheet1", skiprows=0)
-    
-    #Type of input
+    #Handle type of input and convert to mol/L
     if input_type == "salt":
-        salts_dict_molar= {salt: concentration / df_excel.loc[df_excel['Chemical formula'] == salt, 'Molar mass [g/mol]'].iloc[0] for salt, concentration in salts_dict.items()}
+        salts_dict_molar= {salt: concentration / get_molar_mass(salt) for salt, concentration in salts_dict.items()}
         ions = salt2ions(salts_dict_molar, volume = 1)
     if input_type == "ion":
-        ions = salts_dict
+        ions = {ion: concentration / get_molar_mass(ion) for ion, concentration in salts_dict.items()}
         
     #Initialize variables
     soluble = True
     precipitate = []
-    salts = df_excel['Chemical formula'].tolist()
+    salts = dict_salts_trad.keys()
     
     #Compare Q and Ksp for each salt is the Ksp value is provided
     for salt in salts:
-        if df_excel.loc[df_excel['Chemical formula'] == salt, 'Ksp (20°C)'].iloc[0] != "N/A":
-            Ksp = float(df_excel.loc[df_excel['Chemical formula'] == salt, 'Ksp (20°C)'].iloc[0])
-            Q = 1
-            for ion in dict_salts_trad[salt].keys():
-                if ion in ions:
-                    Q *= ions[ion]**dict_salts_trad[salt][ion]
+        try:
+            Ksp = get_Ksp(salt)
+            Q = get_Q_solubility(salt, ions)
             if Q > Ksp and set(dict_salts_trad[salt].keys()).issubset(set(ions.keys())):
                 soluble = False
                 precipitate.append(salt)
+        except:
+            pass
+            
     
-    #Type of output
+    #Handle type of output
     if output_type == "bool":
         return soluble
     elif output_type == "analysis":
@@ -89,9 +85,10 @@ def analyse_nutriments(solution: dict, plant: dict, growth_time: float, volume: 
     Args:
         solution (dict): A dictionary containing salts or ions and their concentrations in the solution.
         input_type (str): Type of input data, either "salt" or "ion".
-        plant (dict): A dictionary containing ions and their required concentrations for plant growth.
+        plant (dict): A dictionary containing ions and their required quantity for plant growth.
         growth_time (float): Expected growth time of the plant [days].
         volume (float): Volume of the solution [L].
+        *Note: the unit of solution and plant must be the same. (either mol/L or g/L)
 
     Returns:
         list: A list containing three elements:
@@ -198,7 +195,7 @@ def data4graph(solution: dict, volume: float, plant: dict, growth_time: float) -
     #Loop trough further values
     for i in range(1,growth_time+1):
             if check_supply_elements(solution, daily_need_plant):
-                solution = update_sol(solution, daily_need_plant)
+                solution = update_sol(solution, daily_need_plant, volume)
                 data[0].append(i)
                 data[1].append(solution.copy())
             else:
