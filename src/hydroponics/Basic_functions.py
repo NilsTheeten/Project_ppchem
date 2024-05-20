@@ -77,7 +77,7 @@ def load_from_data(file_name):
     # Get the directory of the current file
     current_dir = os.path.dirname(os.path.realpath(__file__))
     # Construct the absolute path to the CSV file
-    csv_path = os.path.join(current_dir, 'data', file_name)
+    csv_path = os.path.join(current_dir, '..\\..\\data', file_name)
     return csv_path
 
 
@@ -94,8 +94,8 @@ def get_atom_mass(atom_name: str) -> float:
         float: atomic mass of the atom in g/mol
     """
     # Define the name of the CSV file
-    csv_file = "data/molar_mass.csv" #Check path to CSV file
-    with open(csv_file, mode='r') as file:
+    data_file = load_from_data("molar_mass.csv") #Check path to CSV file
+    with open(data_file, mode='r') as file:
         reader = csv.DictReader(file)
         for row in reader:
             if row['Atom'] == atom_name:
