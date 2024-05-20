@@ -51,6 +51,7 @@ Be aware, the package uses the following dependencies:
  * Pandas (2.2.2)
  * matplotlib (3.8.4)
  * sympy (1.12)
+ * openpyxl (3.1.2)
 
 Please install the dependencies with their according `pip install` commands in the right environment.
 

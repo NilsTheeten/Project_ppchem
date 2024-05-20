@@ -9,7 +9,7 @@ requires-python = ">=3.10"
 license = {file = "LICENSE"}
 description = "Simulation of hydroponic farming"
 dependencies = [
-    "numpy","sympy","reportlab","pandas","matplotlib"
+    "numpy","sympy","reportlab","pandas","matplotlib","openpyxl"
 ]
 authors = [
     {name = "Nils Theeten", email = "nils.theeten@epfl.ch"},

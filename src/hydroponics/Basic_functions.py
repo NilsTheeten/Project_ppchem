@@ -18,9 +18,16 @@ from sympy import symbols, Eq, solve
 
 # ----- Import User Data from Excel file -------------
 
+def load_from_data(file_name):
+    # Get the directory of the current file
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    # Construct the absolute path to the CSV file
+    path = os.path.join(current_dir, '..\\..\\data', file_name)
+    return path
+
 def import_solution_data(solution_name: str) -> dict:
     """
-    Import user data from the Excel file and returns it as a dictionary.
+    Import user data from the Excel file "UserData.xlsx" and returns it as a dictionary.
 
     Args:
         solution_name (str): Name of the column in the Excel file.
@@ -29,35 +36,42 @@ def import_solution_data(solution_name: str) -> dict:
         dict: Dictionary containing the concentration of the ions [g/L] in the solution.
     """
     # Read the Excel file
-    file_name = "data/UserData.xlsx"
-    df = pd.read_excel(file_name, sheet_name="My Solution", skiprows=1)
+    file_name = load_from_data("UserData.xlsx")
+    df = pd.read_excel(file_name, sheet_name="My solution", skiprows=1)
     # Create a dictionary using zip and dictionary comprehension
-    ion_solution_dict = dict(zip(df['Ions'], df[solution_name]))
+    try:
+        ion_solution_dict = dict(zip(df['Ions'], df[solution_name]))
+    except KeyError:
+        raise ValueError(f"Solution {solution_name} not found in the Excel file. Please check the name of the column.")
     return ion_solution_dict
 
-def predefined_solutions(plant:str ) -> dict:
+def predefined_solutions(plant:str, concentration:str="g" ) -> dict:
     """
-    Import user data from the Excel file and returns it as a dictionary.
+    Import user data from the Excel file "UserData.xlsx" and returns it as a dictionary.
 
     Args:
         plant (str): Name of the plant. Can either be 'Eggplant', 'Tomato' or 'Cucumber'.
+        concentration (str): Unit of concentration. Can either be 'g' or 'mol'.
 
     Returns:
-        dict: Dictionary containing the concentration of the ions [g/L] in the solution.
+        dict: Dictionary containing the concentration of the ions [g or mol/L] in the solution.
     """
+    if concentration not in ['g','mol']:
+        raise ValueError("Concentration must be 'g' or 'mol'.")
     available_plants = ['Eggplant', 'Tomato', 'Cucumber']
     if plant not in available_plants:
         raise ValueError(f"Plant {plant} not found. Available plants are {available_plants}.")
     else:
         # Read the Excel file
-        file_name = "data/UserData.xlsx"
+        file_name = load_from_data("UserData.xlsx")
         df = pd.read_excel(file_name, sheet_name="Optimal Solution", skiprows=0)
         # Create a dictionary using zip and dictionary comprehension
-        ion_solution_dict = dict(zip(df['Formula'], df['c [mol/L] '+plant]))
+        ion_solution_dict = dict(zip(df['Formula'], df[str('c ['+concentration+'/L] '+plant)]))
         return ion_solution_dict
 
 def import_plant_data(plant_name:str) -> dict:
-    """_summary_
+    """
+    Import user data from sheet "My Plant" from the Excel file "UserData.xlsx" and returns it as a dictionary.
 
     Args:
         plant (str): name of the column where the data is located
@@ -66,19 +80,12 @@ def import_plant_data(plant_name:str) -> dict:
         dict: dictionary containing the needs of the plant for each ion [g] for a full growth cycle
     """
     # Read the Excel file
-    file_name = "data/UserData.xlsx"
+    file_name = load_from_data("UserData.xlsx")
     df = pd.read_excel(file_name, sheet_name="My plant", skiprows=1)
     # Create a dictionary using zip and dictionary comprehension
     plant_dict = dict(zip(df['Ions'], df[plant_name]))
     return plant_dict
 
-
-def load_from_data(file_name):
-    # Get the directory of the current file
-    current_dir = os.path.dirname(os.path.realpath(__file__))
-    # Construct the absolute path to the CSV file
-    csv_path = os.path.join(current_dir, '..\\..\\data', file_name)
-    return csv_path
 
 
 # ----- Molar mass calculator ------------------------
@@ -103,11 +110,12 @@ def get_atom_mass(atom_name: str) -> float:
 
 def get_molar_mass(salt: str) -> float:
     """
-    Returns the molar mass of a salt in g/mol.
+    Returns the molar mass of a salt in g/mol. 
     
     Args:
     - salt (str): The chemical formula of the salt.
-        Handels chemical formulas of type "Ca(NO3)2", "Ca(2+)(NO3-)2", "Ca2(NO3)2", "Ca(NO3)2(2+)"
+        Handels chemical formulas of type "Ca(NO3)2", "Ca(2+)(NO3-)2", "Ca2(NO3)2", "Ca(NO3)2(2+)".
+        Please do not use spaces in the formula and do not put brackets inside brackets.
     """
     #Check for special characters
     def contains_special_characters(input_string:str):
@@ -120,7 +128,7 @@ def get_molar_mass(salt: str) -> float:
             return False
 
     def molar(molecule:str):
-        
+        #Check for special characters
         if contains_special_characters(molecule):
             raise ValueError("Invalid input. The formula of the molcule can only contain letters,numbers, parentheses and '+' or '-' signs.")
         
@@ -245,9 +253,10 @@ salt2nbIons = {
     "ZnSO4": [1,1],
     "CuSO4": [1,1],
     "(NH4)6Mo7O24": [6,1],
-    "C10H12FeN2NaO8": [1,1],
+    "C10H12FeN2NaO8": [1,1,1],
+    "Fe(III)EDTANa": [1,1,1], #
     "(NH4)H2PO4" : [1,1],
-    "NaCl": [1,],
+    "NaCl": [1,1],
     "NaOH": [1,1],
     "Na2CO3": [2,1],
     "Na2SO4": [2,1],
@@ -281,6 +290,7 @@ dict_salts_trad = {
     "ZnSO4": {"Zn(2+)": 1, "SO4": 1},
     "CuSO4": {"Cu(2+)": 1, "SO4": 1},
     "(NH4)6Mo7O24": {"NH(4+)" : 6, "Mo7O24": 1},
+    "C10H12FeN2NaO8": {"Fe(3+)": 1, "Na+": 1, "EDTA": 1},
     "Fe(III)EDTANa": {"Fe(3+)": 1, "Na+": 1, "EDTA": 1},
     "(NH4)H2PO4" : {"NH4+": 1, "H2PO4": 1},
     "NaCl": {"Na+": 1, "Cl-": 1},
@@ -316,12 +326,13 @@ def get_Ksp(salt_name: str) -> float:
         Uses a salt2nbIons dictionary to find the number of ions in a salt.
 
     Args:
-        salt_name (str): The name of the salt. 
+        salt_name (str): The formula of the salt. Use standard notation for the formula,
+                        e.g. "Ca(NO3)2", "H2O", etc.
 
     Returns:
         float: The solubility product constant (Ksp) of the salt.
     """
-    solubility_file = load_from_data("solubility.csv")
+    solubility_file = load_from_data("Solubility_data.csv")
     df_solubility = pd.read_csv(solubility_file)
     
     row = df_solubility.loc[df_solubility["Formula"] == salt_name].values.tolist() # [[name, formula, value]]
@@ -358,6 +369,7 @@ def get_Q_solubility(salt_name: str, ions_in_solution: dict) -> float:
         if ion in ions_in_solution:
             Q *= ions_in_solution[ion]**salt2nbIons[salt_name][i]
             i+=1
+            
     return Q
 
 
@@ -371,6 +383,7 @@ def salt2ions(solution: dict, volume: float = 1, unit: str = "g") -> dict:
     Convert salts to ions based on their concentrations and volume. Concentrations are in g/L by default 
         but can also be given in mol/L by specifying 'unit' as 'mol'.
         A 'dict_salts_trad' dictionary is used to convert salt names to ions.
+        Make sure the salts are in the 'dict_salts_trad' dictionary.
 
     Args:
         solution (dict): A dictionary containing salt names as keys and concentrations as values.
@@ -424,16 +437,17 @@ def make_solution (ions_in_solution :dict, forbidden_ions:list, volume:float, )-
     to obtain a certain concentration of ions [g/L]
     
     Args:
-        ions_in_solution (dict): dictionary with keys as ions and values as the concentration in g/L
-        forbidden_ions (list): list of ions that cannot be in the solution
-        volume (float): volume of the solution in L
+        ions_in_solution (dict): dictionary with keys as ions and values as the concentration in g/L.
+        forbidden_ions (list): list of ions that cannot be in the solution.
+        volume (float): volume of the final solution in L.
     
     Returns:
-        dict: dictionary with keys as salt names and values as the amount of salt needed in g
+        dict: dictionary with keys as salt names and values as the amount of salt needed in g.
     '''
     
     if set(ions_in_solution.keys()).intersection(forbidden_ions) != set() :
-        raise ValueError("Forbidden ions are in the solution")
+        problems = set(ions_in_solution.keys()).intersection(forbidden_ions)
+        raise ValueError(f"Forbidden ions are required in the solution: {problems}")
     
     molar_ions = {ion: ions_in_solution[ion]/get_molar_mass(ion) for ion in ions_in_solution}
     # Define variables
@@ -471,7 +485,9 @@ def make_solution (ions_in_solution :dict, forbidden_ions:list, volume:float, )-
     
     #Solve equations
     solution = solve(equations, variables)
-    mass_salts = {salt: solution[symbols(salt)]*get_molar_mass(salt) for salt in final_salts}
-        
-    return mass_salts  
+    if solution != []:
+        mass_salts = {salt: solution[symbols(salt)]*get_molar_mass(salt) for salt in final_salts}
+        return mass_salts  
+    else:
+        raise ValueError("No solution found. Please check the ions in the solution and the forbidden ions.")
 
