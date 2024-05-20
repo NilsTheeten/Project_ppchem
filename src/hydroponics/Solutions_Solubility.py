@@ -228,10 +228,10 @@ def plot_graph(solution: dict, input_type:str, plant:dict, growth_time:float, vo
     """
     
     #Initialise the figure and aesthetics
-    plt.figure(figsize=(12, 6), dpi = 300)
-    plt.title('Evolution of the Salts in hydroponic solution', fontsize=14, weight='bold')
-    plt.xlabel(f'Time [days]', fontsize=12)
-    plt.ylabel('Concentration of the salt [g/L]', fontsize=12)
+    plt.figure(figsize=(12, 6), dpi = 500)
+    plt.title('Evolution of the Salts in hydroponic solution', fontsize=16, weight='bold')
+    plt.xlabel(f'Time [days]', fontsize=14)
+    plt.ylabel('Concentration of the salt [g/L]', fontsize=14)
     plt.grid(False)
     plt.gca().set_facecolor('#f9f9f9')
     plt.gca().spines['top'].set_visible(False)
@@ -249,6 +249,11 @@ def plot_graph(solution: dict, input_type:str, plant:dict, growth_time:float, vo
     else:
         initial_ion_solution = solution.copy()
         
+    #add the growth limit
+    analysis = analyse_nutriments(initial_ion_solution, plant, growth_time, volume, input_type_solution = 'ion')
+    if analysis[1] != growth_time:
+        plt.axvline(x=analysis[1], color='r', linestyle='--', label=f'Growth limit: insufficient {analysis[2]}')
+        
     #Plot the data for the ions of interest
     i = 0 #handle the colors    
     data = data4graph(initial_ion_solution, volume, plant, growth_time)
@@ -258,19 +263,18 @@ def plot_graph(solution: dict, input_type:str, plant:dict, growth_time:float, vo
             y = []
             for j in range(len(x)):
                 y.append(data[1][j][ion])
-            plt.plot(x, y, label = ion, color = python_colors[i], linewidth=1.5, linestyle='-', marker='o', markersize=3)
+            plt.plot(x, y, label = ion, color = python_colors[i],alpha=0.8, linewidth=1.5, linestyle='-', marker='o', markersize=3)
             i+=1
+            
     
-    if not analyse_nutriments(initial_ion_solution, plant, growth_time, volume, input_type_solution = 'ion')[0]:
-        plt.axvline(x=analyse_nutriments(initial_ion_solution, plant, growth_time, volume, input_type_solution = 'ion')[1], color='r', linestyle='--', label='Growth limit')
     plt.legend(loc='best')
     
-    #Save Graph
-    download_folder = "data/"
+    #Save Graph to the current directory
+    current_dir = os.path.dirname(os.path.realpath(__file__))
     file_name = "graph_"
     for ion in ions_of_interest:
         file_name += str(ion) + "_"
-    file_path = os.path.join(download_folder, file_name)
+    file_path = os.path.join(current_dir, file_name)
     plt.savefig(file_path + ".png", format='png')  # Save as a PNG file for matplotlib
     
  
