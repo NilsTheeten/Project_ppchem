@@ -3,16 +3,17 @@ This file contains the functions needed in order to generate an automatic report
 """
 
 #Imports
+import os
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import inch
-from reportlab.platypus import SimpleDocTemplate, Table, Paragraph, Spacer, Frame, PageTemplate
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-import matplotlib.pyplot as plt
-import numpy as np
+from reportlab.platypus import SimpleDocTemplate, Table, Paragraph, Spacer, Image
+from reportlab.lib.styles import getSampleStyleSheet
 
-from .Basic_functions import salt2ions, make_solution
-#from .pH_functions import *
+from .Basic_functions import make_solution
+from .Solutions_Solubility import plot_graph, data4graph
+from .PH_Approximation_0 import *
+from .pH_graph_0 import *
 
 # Auxiliar functions
 def merge_dicts(dict1, dict2, ions_of_interest = "all"):
@@ -71,10 +72,12 @@ def generate_report(
     Returns:
         None: a pdf is created in the folder of this file
     """
-    
+    print("Generating report...")
     # PageTemplate of the document
     doc = SimpleDocTemplate("hydroponic_report.pdf", pagesize=letter)
     story = []
+    interest_ions = ", ".join(ions_of_interest)
+    nono_ions = ", ".join(forbidden_ions)
     
     # Title
     title_style = getSampleStyleSheet()["Title"]
@@ -84,23 +87,31 @@ def generate_report(
 
     # 1 .Simulation conditions ---------------------------------------------------------
     subtitle_style = getSampleStyleSheet()['Heading2']
-    subtitle = Paragraph("Simulation Conditions", subtitle_style)
+    subtitle = Paragraph(" 1. Simulation Conditions", subtitle_style)
     story.append(subtitle)
     story.append(Spacer(1, 6))
     
     paragraph_style = getSampleStyleSheet()["Normal"]
-    conditions_text = f"This report summarizes the simulation for a {plant_name} in a hydroponic solution."\
-    f" The volume of the solution used in the simulation is {solution_volume} L."\
-    f" The simulation was done for a duration of {growth_time} days and the followig ions were analysed: {ions_of_interest}"\
-    f" The table below shows the given optimal concentrations of the ions in the hydroponic solution and"\
+    conditions_text = f"This report summarizes the simulation of the growth of a {plant_name} in a hydroponic solution.<br/>"\
+    f"The volume of the solution used in the simulation is {solution_volume} L. "\
+    f"The simulation was done for a duration of {growth_time} days and the followig ions were analysed: {interest_ions}.<br/> <br/>"\
+    f"The following assumptions were made for the simulation:<br/>"\
+        f" - The plant consumes a constant amount of nutriments each day <br/>"\
+        f" - The temperature is assumed to be constant at 25 °C and the pressure at 1 atm. <br/>"\
+        f" - The effect of the sun exposure and light conditions was neglected. <br/> <br/>"\
+    f"The following elements were simulated and analysed:<br/>"\
+        f" - The amount of salts to add to the solution. <br/>"\
+        f" - The evolution of the concentration of the ions of interest in the solution. <br/>"\
+        f" - The pH of the solution. <br/>"\
+    f"<br/> <br/>"\
+    f" The table below shows the provided optimal concentrations of the ions in the hydroponic solution and "\
     f"the nutritional needs of the {plant_name} plant (fully grown):"
     story.append(Paragraph(conditions_text, paragraph_style))
     story.append(Spacer(1, 12))
     
     #Table 
-    Solution_Ions = salt2ions(Hoagland_composition)
-    data = merge_dicts(Solution_Ions, required_nutriments, ions_of_interest)
-    headers = ["[g] of ions",'Hydroponic solution', f'{plant_name} nutriments']
+    data = merge_dicts(solution_composition, required_nutriments, ions_of_interest)
+    headers = ["Ions",'Hydroponic solution [g/L]', f'{plant_name} nutriments requirements[g]']
     table_data = [[elem] + sublist for elem, sublist in zip(headers, data)] 
     # Transpose the data (swap rows and columns)
     table_data = list(map(list, zip(*table_data)))
@@ -116,25 +127,29 @@ def generate_report(
     # Add the table to the story
     story.append(table)
     story.append(Spacer(1, 12))
-    
+    print("Collecting the data ...")
     # 2. Preparation of the solution ---------------------------------------------------------
-    subtitle = Paragraph("Preparation of the solution", subtitle_style)
+    subtitle = Paragraph(" 2. Preparation of the solution", subtitle_style)
     story.append(subtitle)
     story.append(Spacer(1, 6))
     
     preparation_text = f"The table below shows the mass of salts to add the the {solution_volume} L solution" \
-        f" to obtain the desired concentrations of the ions for the {plant_name} plant.\n"\
-        f" The following restrictions were given for the preparation of the solution:\n"\
-        f"Forbidden ions: {forbidden_ions} \n"\
-        f"All the salts must be soluble."
+        f" to obtain the desired concentrations of the ions for the {plant_name} plant.<br/>"\
+        f" The following restrictions were given for the preparation of the solution:<br/>"\
+        f" - Forbidden ions: {nono_ions} <br/>"\
+        f" - All the salts must be soluble. <br/>"\
+        f" - The salts come from a list of commercially available salts. <br/>"
+        
     story.append(Paragraph(preparation_text, paragraph_style))
     story.append(Spacer(1, 12))
     
     #Add table: "salts to add in the solution"
-    salt_composition = make_solution(solution_composition, forbidden_ions = ["Br-"], solution_volume = solution_volume)
-    headers = salt_composition.keys()
-    data = salt_composition.values()
-    table_data = [[elem] + sublist for elem, sublist in zip(headers, data)]
+    salt_composition = make_solution(solution_composition, forbidden_ions ,solution_volume)
+    headers = ["Salts"]+list(salt_composition.keys())
+    data = list(salt_composition.values())
+    data = [round(float(elem), 4) for elem in data]
+    data = [f"Mass [g] for {solution_volume} L solution"]+data
+    table_data = [[elem] + [sublist] for elem, sublist in zip(headers, data)]
     table = Table(table_data)
     table.setStyle([('BACKGROUND', (0, 0), (-1, 0), colors.grey),
                     ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
@@ -146,30 +161,37 @@ def generate_report(
     story.append(table)
     story.append(Spacer(1, 12))
     
+    
     # 3. Ion concentration elvolution ---------------------------------------------------------
-    subtitle = Paragraph("Evolution of salt concentration", subtitle_style)
+    subtitle = Paragraph(" 3. Evolution of the concentration of ions", subtitle_style)
     story.append(subtitle)
     story.append(Spacer(1, 6))
     
-    ion_figure_text = f"The Figure below shows the concentration of the ions of interest {ions_of_interest}" \
+    ion_figure_text = f"The Figure below shows the concentration of the ions of interest ({interest_ions}) " \
         f"as a function of the days of growth of the plant."
     story.append(Paragraph(ion_figure_text, paragraph_style))
     story.append(Spacer(1, 12))
-
-    # Add the graph to the report
-    graph_name = "graph_"
+    
+    # Make the graph
+    plot_graph(solution_composition, "ion", required_nutriments, growth_time, solution_volume, ions_of_interest)
+    
+    # Get the path of the graph
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    file_name = "graph_"
     for ion in ions_of_interest:
-        graph_name += ion + "_"
-    graph = graph_name + ".png"
-    story.append(Paragraph("Graph:", subtitle_style))
-    story.append(Spacer(1, 6))
-    story.append(Paragraph("", paragraph_style))
-    story.append(Spacer(1, 12))
-    story.append(Paragraph(f'<img src="{graph}" width="400" height="200"/>', paragraph_style))
+        file_name += str(ion) + "_"
+    file_name += ".png"
+    file_path = os.path.join(current_dir, file_name)
+
+    # Add the image to the story and center it
+    image = Image(file_path, width=600, height=300)
+    image.hAlign = 'CENTER'
+    story.append(image)
     story.append(Spacer(1, 12))
     
+    print("Simulating the plant growth...")
     # 4. pH of the solution ---------------------------------------------------------
-    subtitle = Paragraph("pH of the solution", subtitle_style)
+    subtitle = Paragraph(" 4. pH of the solution", subtitle_style)
     story.append(subtitle)
     story.append(Spacer(1, 6))
     
@@ -178,16 +200,33 @@ def generate_report(
     
     story.append(Paragraph(pH_text, paragraph_style))
     story.append(Spacer(1, 12))
-
-    # Add the graph to the report
-    graph = "pH.png"
-    story.append(Paragraph("Graph:", subtitle_style))
-    story.append(Spacer(1, 6))
-    story.append(Paragraph("", paragraph_style))
+    
+    #Generate the data
+    solution_pH = data4graph(solution_composition,solution_volume,required_nutriments,growth_time)[1]
+    temp = int(25)
+    pH_part_of_report_generation(solution_pH, temp, plant_name) #create images
+    
+    # Get the path of the pH_graph
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    file_name = "graph_pH.png"
+    file_path = os.path.join(current_dir, file_name)
+    # Add the image to the story and center it
+    image = Image(file_path, width=600, height=300)
+    image.hAlign = 'CENTER'
+    story.append(image)
     story.append(Spacer(1, 12))
-    story.append(Paragraph(f'<img src="{graph}" width="400" height="200"/>', paragraph_style))
+    
+    # Get the path of the pH_table
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    file_name = "Table_pH.png"
+    file_path = os.path.join(current_dir, file_name)
+    # Add the image to the story and center it
+    image = Image(file_path, width=300, height=300)
+    image.hAlign = 'CENTER'
+    story.append(image)
     story.append(Spacer(1, 12))
-
+    
     # Build the PDF
     doc.build(story)
+    print("Report generated successfully!")
     

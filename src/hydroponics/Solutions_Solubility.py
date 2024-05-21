@@ -133,7 +133,9 @@ def analyse_nutriments(solution: dict, plant: dict, growth_time: float, volume: 
 #Check is enaugh nutriments are present in the solution
 def check_supply_elements(ions_solution, plant) -> bool:
     for ion in plant.keys():
-        if plant[ion] > ions_solution[ion]:
+        if ion not in ions_solution:
+            raise ValueError("{ion} is not present in the solution but is required for the plant growth.")
+        elif plant[ion] > ions_solution[ion]:
             return False
     return True
 
@@ -229,9 +231,9 @@ def plot_graph(solution: dict, input_type:str, plant:dict, growth_time:float, vo
     
     #Initialise the figure and aesthetics
     plt.figure(figsize=(12, 6), dpi = 500)
-    plt.title('Evolution of the Salts in hydroponic solution', fontsize=16, weight='bold')
+    plt.title('Evolution of the Ions in hydroponic solution', fontsize=16, weight='bold')
     plt.xlabel(f'Time [days]', fontsize=14)
-    plt.ylabel('Concentration of the salt [g/L]', fontsize=14)
+    plt.ylabel('Concentration of the ion [g/L]', fontsize=14)
     plt.grid(False)
     plt.gca().set_facecolor('#f9f9f9')
     plt.gca().spines['top'].set_visible(False)

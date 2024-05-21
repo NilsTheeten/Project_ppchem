@@ -13,7 +13,7 @@ import re
 import os
 import csv
 import pandas as pd
-from sympy import symbols, Eq, solve
+from sympy import symbols, Eq, solve, solveset, S, Interval 
 
 
 # ----- Import User Data from Excel file -------------
@@ -276,44 +276,50 @@ salt2nbIons = {
     "FeSO4": [1,1],
     "FeCl3": [1,3],
     "AlCl3": [1,3],
-    "KBr" : [1,1]
+    "KBr" : [1,1],
+    "Mg(NO3)2": [1,2],
+    "Zn(NO3)2": [1,2],
+    "Cu(NO3)2": [1,2]
 
     
 }
 dict_salts_trad = {
     "Ca(NO3)2": {"Ca(2+)": 1, "NO3(-)": 2},
-    "MgSO4": {"Mg(2+)": 1, "SO4": 1},
+    "MgSO4": {"Mg(2+)": 1, "SO4(2-)": 1},
     "KNO3": {"K+": 1, "NO3(-)": 1},
-    "KH2PO4": {"K+": 1, "H2PO4": 1},
+    "KH2PO4": {"K+": 1, "H2PO4(-)": 1},
     "H3BO3": {"B": 1},
     "MnCl2": {"Mn(2+)": 1, "Cl-": 2},
-    "ZnSO4": {"Zn(2+)": 1, "SO4": 1},
-    "CuSO4": {"Cu(2+)": 1, "SO4": 1},
-    "(NH4)6Mo7O24": {"NH(4+)" : 6, "Mo7O24": 1},
+    "ZnSO4": {"Zn(2+)": 1, "SO4(2-)": 1},
+    "CuSO4": {"Cu(2+)": 1, "SO4(2-)": 1},
+    "(NH4)6Mo7O24": {"NH(4+)" : 6, "Mo": 1},
     "C10H12FeN2NaO8": {"Fe(3+)": 1, "Na+": 1, "EDTA": 1},
     "Fe(III)EDTANa": {"Fe(3+)": 1, "Na+": 1, "EDTA": 1},
-    "(NH4)H2PO4" : {"NH4+": 1, "H2PO4": 1},
+    "(NH4)H2PO4" : {"NH4+": 1, "H2PO4(-)": 1},
     "NaCl": {"Na+": 1, "Cl-": 1},
     "NaOH": {"Na+": 1, "OH-": 1},
     "Na2CO3": {"Na+": 2, "CO3": 1},
-    "Na2SO4": {"Na+": 2, "SO4": 1},
-    "NaHCO3": {"Na+": 1, "HCO3": 1},
+    "Na2SO4": {"Na+": 2, "SO4(2-)": 1},
+    "NaHCO3": {"Na+": 1, "HCO3(-)": 1},
     "Na2S": {"Na+": 2, "S(2-)": 1},
     "KCl": {"K+": 1, "Cl-": 1},
     "KOH": {"K+": 1, "OH-": 1},
-    "K2SO4": {"K+": 2, "SO4": 1},
-    "K2CO3": {"K+": 2, "CO3": 1},
-    "KHCO3": {"K+": 1, "HCO3": 1},
+    "K2SO4": {"K+": 2, "SO4(2-)": 1},
+    "K2CO3": {"K+": 2, "CO3(2-)": 1},
+    "KHCO3": {"K+": 1, "HCO3(-)": 1},
     "CaCl2": {"Ca(2+)": 1, "Cl-": 2},
     "Ca(OH)2": {"Ca(2+)": 1, "OH-": 2},
-    "CaCO3": {"Ca(2+)": 1, "CO3": 1},
+    "CaCO3": {"Ca(2+)": 1, "CO3(2-)": 1},
     "MgCl2": {"Mg(2+)": 1, "Cl-": 2},
     "Mg(OH)2": {"Mg(2+)": 1, "OH-": 2},
-    "MgCO3": {"Mg(2+)": 1, "CO3": 1},
-    "FeSO4": {"Fe(2+)": 1, "SO4": 1},
+    "MgCO3": {"Mg(2+)": 1, "CO3(2-)": 1},
+    "FeSO4": {"Fe(2+)": 1, "SO4(2-)": 1},
     "FeCl3": {"Fe(3+)": 1, "Cl-": 3},
     "AlCl3": {"Al(3+)": 1, "Cl-": 3},
-    "KBr" : {"K+": 1, "Br-": 1}
+    "KBr" : {"K+": 1, "Br-": 1},
+    "Mg(NO3)2": {"Mg(2+)": 1, "NO3(-)": 2},
+    "Zn(NO3)2": {"Zn(2+)": 1, "NO3(-)": 2},
+    "Cu(NO3)2": {"Cu(2+)": 1, "NO3(-)": 2}
 
     
 }
@@ -457,13 +463,13 @@ def make_solution (ions_in_solution :dict, forbidden_ions:list, volume:float, )-
             if (ion in molar_ions) and (salt not in possible_salts) and (len(set(dict_salts_trad[salt].keys()).intersection(forbidden_ions)) == 0):
                 possible_salts.append(salt)
     
-    for salt in possible_salts[:]:
+    #Check for soluble salts
+    for salt in possible_salts:
         if get_Ksp(salt) <= get_Q_solubility(salt, molar_ions):
             possible_salts.remove(salt)
     
     #NB variables == NB equations
     final_salts = []
-    nb_eq = len(molar_ions.keys())
     for ion in molar_ions.keys():
         for salt in possible_salts:
             if ion in dict_salts_trad[salt] and salt not in final_salts:
@@ -481,13 +487,22 @@ def make_solution (ions_in_solution :dict, forbidden_ions:list, volume:float, )-
             if ion in dict_salts_trad[salt]:
                 lhs += dict_salts_trad[salt][ion] * symbols(salt)
         equation = Eq(lhs, rhs)
-        equations.append(equation)     
+        equations.append(equation)
     
     #Solve equations
-    solution = solve(equations, variables)
-    if solution != []:
-        mass_salts = {salt: solution[symbols(salt)]*get_molar_mass(salt) for salt in final_salts}
-        return mass_salts  
+    try :
+        positive_solutions = solveset(equations, variables, domain=Interval(0, 1000000))
+    except:
+        positive_solutions = set()
+    if positive_solutions == set():
+        solution = solve(equations, variables)
+        if solution == []:
+            raise ValueError("No solution found. Please check the ions in the solution and the forbidden ions.")
+        else:
+            mass_salts = {salt: solution[symbols(salt)]*get_molar_mass(salt) for salt in final_salts}
+            return mass_salts  
     else:
-        raise ValueError("No solution found. Please check the ions in the solution and the forbidden ions.")
-
+        mass_salts = {salt: positive_solutions[symbols(salt)]*get_molar_mass(salt) for salt in final_salts}
+        return mass_salts
+        
+        

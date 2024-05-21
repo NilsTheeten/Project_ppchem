@@ -13,116 +13,119 @@ def pH_approximation (concentration_of_ions_in_solution:dict, temperature:float)
     Returns:
     pH (float): The pH of the solution. If the solution is unsolvable, the function returns 6.5.
     """
-    #Using find_acid so as to determine pKa values associated to some ions in the solution 
-    Degree_of_deprotonation, pKa_identified_ions=find_acid(concentration_of_ions_in_solution, pKa_values)
-    #setting index for compounds possesing pKa values
-    i=0
-    #setting index for compounds possesing Ksp values (metals)
-    l=0
-    #setting variable of the concentration of protons in solution
-    H_plus_concentration=symbols("H_plus_concentration")
-    #setting variable of the concentration of OH- in solution 
-    OH_minus_concentration=symbols("OH_minus_concentration")
-    
-    # Defines system of equations
-    equations = []
-    
-    # Initialize a list to accumulate variables for charge balance calculations 
-    accumulated_variables_for_charge_balance = []
-    # Determines the ionization constant of water (Kw) at a specific temperature
-    Kw=Value_of_Ionisation_Constant[temperature]
-    # Defines the equation for the ionization constant of water
-    Kw_equation=Eq(H_plus_concentration*OH_minus_concentration,Kw)
-    equations.append(Kw_equation)
-    #Adding OH_minus and H_plus to charge balance
-    accumulated_variables_for_charge_balance.append(H_plus_concentration-OH_minus_concentration)
-    #Initialise a list for final proton concentration
-    accumulated_variables_for_final_proton_concentration=[]
-    #Initialise a variable for final OH-
-    accumulated_variables_for_final_OH_concentration=[]
-    #Initial concentration of protons
-    H_plus_zero=10**(-7)
-    #Initial concentration of OH-
-    OH_minus_zero=10**(-7)
-    #Adding final concentration variables
-    accumulated_variables_for_final_OH_concentration.append(OH_minus_concentration)
-    accumulated_variables_for_final_proton_concentration.append(H_plus_concentration)
-    #symbols dictionnary, used to easily recall dynamically created symbol type variables
-    symbol_dict={}
-    for compound, compound_concentration in concentration_of_ions_in_solution.items():
-        #If the concentration of the compound is 0, then the compound is not considered in the calculations
-        if float(compound_concentration) == 0:
-            continue
-        """
-        Below, it is checked as to whether or not the compound has a solubility product constant or an acid dissociation constant. The former allows one to define the impact that metal ions have on the pH of the solution
-        One can see Ksp having an impact on the pH with the example that follows. We have an initial salt we place in a solution, i.e, CaSO4, which then dissociates into Ca^2+ and SO4^2-. 
-        There is then a Ksp constant that depends on the concentration of Ca^2+, OH^-1 and Ca(OH)2 and a Ka value that depends on the concentration of SO4^2-, HSO4^1- and H2SO4 as well as H+
-        The Ksp constant has an impact on the concentration of OH^-1 which in itself impact the pH of the solution.
-        """
-        if compound in Ksp_values:
-            #Defines variables for the concentrations of the metal in a dissociated state or not, i.e, Ca(OH)^2- or Ca^2+
-            symbols_dict[f"dissociated_metal_{l}_concentration"]=symbols(f"dissociated_metal_{l}_concentration")
-            symbols_dict[f"undissociated_metal_compound_{l}_concentration"]=symbols(f"undissociated_metal_compound_{l}_concentration")
-            #Equation of dissociation equilibrium
-            equation_Ksp = Eq((symbols_dict[f'dissociated_metal_compound_{l}_concentration']*OH_minus_concentration**(compound_charge[compound]))/(symbols_dict[f'undissociated_metal_compound_{l}_concentration']), Ksp_values[compound])
-            equations.append(equation_Ksp)
-            # Accumulating variables for charge balance. 
-            accumulated_variables_for_charge_balance.append(compound_charge[compound]*f'dissociated_metal_{l}_concentration')
-            #Mass equation of metal/metal compound
-            exec(f"mass_balance_metal = Eq(dissociated_metal_{l}_concentration + undissociated_metal_{l}_concentration, compound_concentration)")
-            equations.append(mass_balance_metal)
-            exec(f"accumulated_variables_for_final_OH_concentration.append(-compound_charge[compound]*undissociated_metal_compound_{l}_concentration)")
-            l+=1
-        else: 
-            #Defines the constant that is the initial concentration of the compound 
-            globals()[f'initial_compound_concentration_{i}']=compound_concentration 
-            #Initialize a variable to accumulate the variables of the concentrations into one equation of mass balance
-            accumulated_variables_for_mass_balance=[]
-            #Determines the number of states a compound is in whose concentrations define one of the known Ka values of the compound, there could be more states in reality, but they are negligeable. 
-            number_of_states_of_dissociation=len(pKa_identified_ions[compound])+1
-            
-            for s in range (number_of_states_of_dissociation): 
-                #derives the Ka_th value of a compound
-                if s!=number_of_states_of_dissociation-1:
-                    exec(f'Ka_{s}_value_of_compound_{i}=float(10**(-pKa_identified_ions[compound][s]))')
-                #This line below generates symbolic variables representing the concentrations of 
-                #different forms of a compound, where each variable corresponds to a state of dissociation "s" of compound "i" .
-                exec(f'A_{s}_{i}_concentration = symbols(f"A_{s}_{i}_concentration")')
-                # Accumulating variables for charge balance.
-                exec(f'accumulated_variables_for_charge_balance.append((highest_existing_charge_of_compounds[compound]-s)*A_{s}_{i}_concentration)')
-                #Accumulating variables for mass balance 
-                exec(f'accumulated_variables_for_mass_balance.append(A_{s}_{i}_concentration)')
-                #Accumulating variables for final proton concentration
-                if s<Degree_of_deprotonation[compound]:
-                    exec(f'accumulated_variables_for_final_proton_concentration.append(A_{s}_{i}_concentration)')
-                if s>Degree_of_deprotonation[compound]:
-                    exec(f'accumulated_variables_for_final_proton_concentration.append(-1*A_{s}_{i}_concentration)')
-            for s in range(number_of_states_of_dissociation):
-                if s!=number_of_states_of_dissociation-1:
-                    exec(f'equation_Ka_{s}_{i} = Eq((H_plus_concentration*A_{s+1}_{i}_concentration)/A_{s}_{i}_concentration, Ka_{s}_value_of_compound_{i})')
-                    exec(f'equations.append(equation_Ka_{s}_{i})')
-            mass_equation_i=Eq(sum(accumulated_variables_for_mass_balance),compound_concentration)
-            equations.append(mass_equation_i)
-            i+=1
-    #Setting up the charge balance equation
-    Charge_Balance_equation= Eq(sum(accumulated_variables_for_charge_balance), 0)
-    #Adding charge balance equation to the list of equations
-    equations.append(Charge_Balance_equation)
-    #Setting up the mass balance equation for protons 
-    proton_concentration_mass_balance=Eq(sum(accumulated_variables_for_final_proton_concentration),H_plus_zero)
-    #Adding mass balance equation for protons to the list of equations
-    equations.append(proton_concentration_mass_balance)
-    #Setting up the mass balance equation for OH- when there is at least one metal ion in the solution, otherwise, the equation is not needed
-    if len(accumulated_variables_for_final_OH_concentration)>1:
-        OH_concentration_mass_balance=Eq(sum(accumulated_variables_for_final_OH_concentration),OH_minus_zero)
-        equations.append(OH_concentration_mass_balance)
-    #Solving the system of equations
-    solution = solve(equations, (H_plus_concentration, OH_minus_concentration))
-    #If the solution is empty, the pH is set to be a value randomly generated around 6.5 following a normal distribution. This is done to use the function to generate the graph of pH no matter what. 
+    try:
+        #Using find_acid so as to determine pKa values associated to some ions in the solution 
+        Degree_of_deprotonation, pKa_identified_ions=find_acid(concentration_of_ions_in_solution, pKa_values)
+        #setting index for compounds possesing pKa values
+        i=0
+        #setting index for compounds possesing Ksp values (metals)
+        l=0
+        #setting variable of the concentration of protons in solution
+        H_plus_concentration=symbols("H_plus_concentration")
+        #setting variable of the concentration of OH- in solution 
+        OH_minus_concentration=symbols("OH_minus_concentration")
+        
+        # Defines system of equations
+        equations = []
+        
+        # Initialize a list to accumulate variables for charge balance calculations 
+        accumulated_variables_for_charge_balance = []
+        # Determines the ionization constant of water (Kw) at a specific temperature
+        Kw=Value_of_Ionisation_Constant[temperature]
+        # Defines the equation for the ionization constant of water
+        Kw_equation=Eq(H_plus_concentration*OH_minus_concentration,Kw)
+        equations.append(Kw_equation)
+        #Adding OH_minus and H_plus to charge balance
+        accumulated_variables_for_charge_balance.append(H_plus_concentration-OH_minus_concentration)
+        #Initialise a list for final proton concentration
+        accumulated_variables_for_final_proton_concentration=[]
+        #Initialise a variable for final OH-
+        accumulated_variables_for_final_OH_concentration=[]
+        #Initial concentration of protons
+        H_plus_zero=10**(-7)
+        #Initial concentration of OH-
+        OH_minus_zero=10**(-7)
+        #Adding final concentration variables
+        accumulated_variables_for_final_OH_concentration.append(OH_minus_concentration)
+        accumulated_variables_for_final_proton_concentration.append(H_plus_concentration)
+        #symbols dictionnary, used to easily recall dynamically created symbol type variables
+        symbol_dict={}
+        for compound, compound_concentration in concentration_of_ions_in_solution.items():
+            #If the concentration of the compound is 0, then the compound is not considered in the calculations
+            if float(compound_concentration) == 0:
+                continue
+            """
+            Below, it is checked as to whether or not the compound has a solubility product constant or an acid dissociation constant. The former allows one to define the impact that metal ions have on the pH of the solution
+            One can see Ksp having an impact on the pH with the example that follows. We have an initial salt we place in a solution, i.e, CaSO4, which then dissociates into Ca^2+ and SO4^2-. 
+            There is then a Ksp constant that depends on the concentration of Ca^2+, OH^-1 and Ca(OH)2 and a Ka value that depends on the concentration of SO4^2-, HSO4^1- and H2SO4 as well as H+
+            The Ksp constant has an impact on the concentration of OH^-1 which in itself impact the pH of the solution.
+            """
+            if compound in Ksp_values:
+                #Defines variables for the concentrations of the metal in a dissociated state or not, i.e, Ca(OH)^2- or Ca^2+
+                symbols_dict[f"dissociated_metal_{l}_concentration"]=symbols(f"dissociated_metal_{l}_concentration")
+                symbols_dict[f"undissociated_metal_compound_{l}_concentration"]=symbols(f"undissociated_metal_compound_{l}_concentration")
+                #Equation of dissociation equilibrium
+                equation_Ksp = Eq((symbols_dict[f'dissociated_metal_compound_{l}_concentration']*OH_minus_concentration**(compound_charge[compound]))/(symbols_dict[f'undissociated_metal_compound_{l}_concentration']), Ksp_values[compound])
+                equations.append(equation_Ksp)
+                # Accumulating variables for charge balance. 
+                accumulated_variables_for_charge_balance.append(compound_charge[compound]*f'dissociated_metal_{l}_concentration')
+                #Mass equation of metal/metal compound
+                exec(f"mass_balance_metal = Eq(dissociated_metal_{l}_concentration + undissociated_metal_{l}_concentration, compound_concentration)")
+                equations.append(mass_balance_metal)
+                exec(f"accumulated_variables_for_final_OH_concentration.append(-compound_charge[compound]*undissociated_metal_compound_{l}_concentration)")
+                l+=1
+            else: 
+                #Defines the constant that is the initial concentration of the compound 
+                globals()[f'initial_compound_concentration_{i}']=compound_concentration 
+                #Initialize a variable to accumulate the variables of the concentrations into one equation of mass balance
+                accumulated_variables_for_mass_balance=[]
+                #Determines the number of states a compound is in whose concentrations define one of the known Ka values of the compound, there could be more states in reality, but they are negligeable. 
+                number_of_states_of_dissociation=len(pKa_identified_ions[compound])+1
+                
+                for s in range (number_of_states_of_dissociation): 
+                    #derives the Ka_th value of a compound
+                    if s!=number_of_states_of_dissociation-1:
+                        exec(f'Ka_{s}_value_of_compound_{i}=float(10**(-pKa_identified_ions[compound][s]))')
+                    #This line below generates symbolic variables representing the concentrations of 
+                    #different forms of a compound, where each variable corresponds to a state of dissociation "s" of compound "i" .
+                    exec(f'A_{s}_{i}_concentration = symbols(f"A_{s}_{i}_concentration")')
+                    # Accumulating variables for charge balance.
+                    exec(f'accumulated_variables_for_charge_balance.append((highest_existing_charge_of_compounds[compound]-s)*A_{s}_{i}_concentration)')
+                    #Accumulating variables for mass balance 
+                    exec(f'accumulated_variables_for_mass_balance.append(A_{s}_{i}_concentration)')
+                    #Accumulating variables for final proton concentration
+                    if s<Degree_of_deprotonation[compound]:
+                        exec(f'accumulated_variables_for_final_proton_concentration.append(A_{s}_{i}_concentration)')
+                    if s>Degree_of_deprotonation[compound]:
+                        exec(f'accumulated_variables_for_final_proton_concentration.append(-1*A_{s}_{i}_concentration)')
+                for s in range(number_of_states_of_dissociation):
+                    if s!=number_of_states_of_dissociation-1:
+                        exec(f'equation_Ka_{s}_{i} = Eq((H_plus_concentration*A_{s+1}_{i}_concentration)/A_{s}_{i}_concentration, Ka_{s}_value_of_compound_{i})')
+                        exec(f'equations.append(equation_Ka_{s}_{i})')
+                mass_equation_i=Eq(sum(accumulated_variables_for_mass_balance),compound_concentration)
+                equations.append(mass_equation_i)
+                i+=1
+        #Setting up the charge balance equation
+        Charge_Balance_equation= Eq(sum(accumulated_variables_for_charge_balance), 0)
+        #Adding charge balance equation to the list of equations
+        equations.append(Charge_Balance_equation)
+        #Setting up the mass balance equation for protons 
+        proton_concentration_mass_balance=Eq(sum(accumulated_variables_for_final_proton_concentration),H_plus_zero)
+        #Adding mass balance equation for protons to the list of equations
+        equations.append(proton_concentration_mass_balance)
+        #Setting up the mass balance equation for OH- when there is at least one metal ion in the solution, otherwise, the equation is not needed
+        if len(accumulated_variables_for_final_OH_concentration)>1:
+            OH_concentration_mass_balance=Eq(sum(accumulated_variables_for_final_OH_concentration),OH_minus_zero)
+            equations.append(OH_concentration_mass_balance)
+        #Solving the system of equations
+        solution = solve(equations, (H_plus_concentration, OH_minus_concentration))
+        #If the solution is empty, the pH is set to be a value randomly generated around 6.5 following a normal distribution. This is done to use the function to generate the graph of pH no matter what. 
+    except:
+        solution = []
     if (len(solution))==0:
         mu = 6.5  # mean
-        sigma = 0.5  # standard deviation
-        random_pH_value = random.gauss(mu, sigma)
+        sigma = 0.2  # standard deviation
+        random_pH_value = round(random.gauss(mu, sigma),4)
 
         return random_pH_value
     pH=-math.log10(solution[0][0])
