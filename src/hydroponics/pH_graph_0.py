@@ -3,6 +3,7 @@ import pandas as pd
 from hydroponics.PH_Approximation_0 import pH_approximation
 import os
 
+#Dictionary with optimal range for plants to grow in 
 pH_limit_of_plants = {
     "Eggplant": [6.2, 6.8],
     "Cucumber": [6.0, 7.0],
@@ -16,11 +17,11 @@ def generation_of_pH_list(concentrations_list:list, temperature:float, plant:str
     Parameters:
         concentrations_list (list): list of dictionaries of concentrations throughout days, with the index of the 
         dictionary in the list being the day where the concentrations were derived.
-        temperature (float): Temperature value.
+        temperature (float): Temperature of the solution in degrees celcius.
         plant (str): Name of the plant.
 
     Returns:
-        list: pH values for each concentration.
+        list: pH values for each concentration dictionary.
         list: Indices of days where pH exceeded limits.
     """
     pH_values = []  # List to store pH values
@@ -41,7 +42,7 @@ def generation_of_pH_list(concentrations_list:list, temperature:float, plant:str
                 # pH exceeds limits, add index to the list
                 Days_where_pH_was_exceeded.append(i)
         else:
-            if pH_value < pH_value < 7.0:
+            if 6.0 < pH_value < 7.0:
                 pass  
             else:
                 # pH exceeds limits, add index to the list
@@ -51,7 +52,8 @@ def generation_of_pH_list(concentrations_list:list, temperature:float, plant:str
 
 def pH_graph(pH_values:list,Days_where_pH_was_exceeded:list,plant:str)->None:
     """"
-    Generates a graph of pH values over time, with marked points where pH exceeded limits and a table of points of excess pH levels.
+    Generates a graph of pH values over time, with marked points where pH exceeded limits and a table of points of excess pH levels. The two figures
+    are saved as png files. 
     Parameters:
         pH_values (tuple of lists of pH values over time)
         Days_where_pH_was_exceeded (list)
@@ -130,7 +132,7 @@ pH_graph(pH_values,Days_where_pH_was_exceeded,"tomatoes")
 def pH_part_of_report_generation(concentrations_list:list, temperature:float, plant:str)->None:
     """"
     Generates a pH graph and a table of points of excess pH levels by calling the generation_of_pH _list function followed 
-    by the pH_graph function and displaying the results.
+    by the pH_graph function, the latter saving the figures as png files. 
     Parameters:
         concentrations_list (dict) 
         temperature (float)

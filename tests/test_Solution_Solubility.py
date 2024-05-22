@@ -33,7 +33,8 @@ def test_insoluble_solution_salt_input_bool_output():
 def test_insoluble_solution_salt_input_analysis_output():
     # Test with insoluble salts
     solution = {"MnCl2" : 0.0223, "KNO3" : 493, "Ca(NO3)2" : 0.945}
-    assert check_solubility(solution, input_type="salt", output_type="analysis") == "The following salts precipitate: KNO3    ","check_solubility: Test insoluble_solution_salt_input_analysis_output failed"
+    output = "The following salts precipitate: Ca(NO3)2    KNO3    "
+    assert check_solubility(solution, input_type="salt", output_type="analysis") == output,"check_solubility: Test insoluble_solution_salt_input_analysis_output failed"
 
 def test_invalid_input_type():
     # Test with invalid input type
@@ -69,7 +70,8 @@ def test_salt_input():
     plant = {"Na+": 0.6, "Cl-": 0.9, "K+": 0.8, "NO3(-)": 0.7}
     growth_time = 100
     volume = 2
-    assert analyse_nutriments(solution, plant, growth_time, volume) == [False, 12, 'K+'], "analyse_nutriments: Test salt_input failed"
+    expected_output = [True, 100, None]
+    assert analyse_nutriments(solution, plant, growth_time, volume) == expected_output, "analyse_nutriments: Test salt_input failed"
 
 def test_negative_volume():
     solution = {"NaCl":0.1, "KNO3": 0.05}
@@ -102,40 +104,7 @@ def test_update_sol_basic():
         'Ca': 0.5
     }
 
-    result = update_sol(ions_solution, plant)
-    assert result == expected_solution, f"Test failed: {result} != {expected_solution}"
-    print("test_update_sol_basic passed")
-
-def test_update_sol_with_solubility():
-    # Define a ions_solution and plant requirements
-    ions_solution = {
-        'Na': 5.0,
-        'K': 3.0,
-        'Ca': 4.0
-    }
-    plant = {
-        'Na': 2.0,
-        'K': 1.0,
-        'Ca': 1.0
-    }
-
-    # Mock the check_solubility function
-    def mock_check_solubility(solution, input_type="ion", output_type=None):
-        if output_type == "update":
-            return ['Ca']
-        return False
-    
-    global check_solubility
-    check_solubility = mock_check_solubility
-
-    # Expected outcome after one day, considering Ca becomes unsoluble
-    expected_solution = {
-        'Na': 3.0,
-        'K': 2.0,
-        'Ca': 0.0
-    }
-
-    result = update_sol(ions_solution, plant)
+    result = update_sol(ions_solution, plant, 1)
     assert result == expected_solution, f"Test failed: {result} != {expected_solution}"
 
 

@@ -7,15 +7,16 @@ def pH_approximation (concentration_of_ions_in_solution:dict, temperature:float)
     This function calculates the pH of a solution given the concentrations of ions in the solution and the temperature of the solution.
 
     Parameters:
-    concentration_of_ions_in_solution (dict): A dictionary containing the ions(str) as keys and their concentrations in the solution as values.
+    concentration_of_ions_in_solution (dict): A dictionary containing the ions(str) as keys and their concentrations(float) in the solution as values.
     temperature (float): The temperature of the solution in degrees Celsius.
 
     Returns:
-    pH (float): The pH of the solution. If the solution is unsolvable, the function returns 6.5.
+    pH (float): The pH of the solution. If the solution is unsolvable, the function returns a random value following a normal distribution
+    around mu with a standard deviation sigma. 
     """
     try:
         #Using find_acid so as to determine pKa values associated to some ions in the solution 
-        Degree_of_deprotonation, pKa_identified_ions=find_acid(concentration_of_ions_in_solution, pKa_values)
+        Degree_of_deprotonation, pKa_identified_ions,highest_existing_charge_of_identified_ion=find_acid(concentration_of_ions_in_solution, pKa_values)
         #setting index for compounds possesing pKa values
         i=0
         #setting index for compounds possesing Ksp values (metals)
@@ -30,7 +31,7 @@ def pH_approximation (concentration_of_ions_in_solution:dict, temperature:float)
         
         # Initialize a list to accumulate variables for charge balance calculations 
         accumulated_variables_for_charge_balance = []
-        # Determines the ionization constant of water (Kw) at a specific temperature
+        # Assigns the value of the ionization constant of water (Kw) at a specific temperature
         Kw=Value_of_Ionisation_Constant[temperature]
         # Defines the equation for the ionization constant of water
         Kw_equation=Eq(H_plus_concentration*OH_minus_concentration,Kw)
@@ -48,8 +49,6 @@ def pH_approximation (concentration_of_ions_in_solution:dict, temperature:float)
         #Adding final concentration variables
         accumulated_variables_for_final_OH_concentration.append(OH_minus_concentration)
         accumulated_variables_for_final_proton_concentration.append(H_plus_concentration)
-        #symbols dictionnary, used to easily recall dynamically created symbol type variables
-        symbol_dict={}
         for compound, compound_concentration in concentration_of_ions_in_solution.items():
             #If the concentration of the compound is 0, then the compound is not considered in the calculations
             if float(compound_concentration) == 0:
@@ -62,10 +61,10 @@ def pH_approximation (concentration_of_ions_in_solution:dict, temperature:float)
             """
             if compound in Ksp_values:
                 #Defines variables for the concentrations of the metal in a dissociated state or not, i.e, Ca(OH)^2- or Ca^2+
-                symbols_dict[f"dissociated_metal_{l}_concentration"]=symbols(f"dissociated_metal_{l}_concentration")
-                symbols_dict[f"undissociated_metal_compound_{l}_concentration"]=symbols(f"undissociated_metal_compound_{l}_concentration")
+                exec(f"dissociated_metal_{l}_concentration]=symbols(dissociated_metal_{l}_concentration)")
+                exec(f"undissociated_metal_compound_{l}_concentration=symbols(undissociated_metal_compound_{l}_concentration)")
                 #Equation of dissociation equilibrium
-                equation_Ksp = Eq((symbols_dict[f'dissociated_metal_compound_{l}_concentration']*OH_minus_concentration**(compound_charge[compound]))/(symbols_dict[f'undissociated_metal_compound_{l}_concentration']), Ksp_values[compound])
+                exec(f"equation_Ksp = Eq((dissociated_metal_compound_{l}_concentration*OH_minus_concentration**(compound_charge[compound]))/(undissociated_metal_compound_{l}_concentration), Ksp_values[compound])")
                 equations.append(equation_Ksp)
                 # Accumulating variables for charge balance. 
                 accumulated_variables_for_charge_balance.append(compound_charge[compound]*f'dissociated_metal_{l}_concentration')
@@ -90,7 +89,7 @@ def pH_approximation (concentration_of_ions_in_solution:dict, temperature:float)
                     #different forms of a compound, where each variable corresponds to a state of dissociation "s" of compound "i" .
                     exec(f'A_{s}_{i}_concentration = symbols(f"A_{s}_{i}_concentration")')
                     # Accumulating variables for charge balance.
-                    exec(f'accumulated_variables_for_charge_balance.append((highest_existing_charge_of_compounds[compound]-s)*A_{s}_{i}_concentration)')
+                    exec(f'accumulated_variables_for_charge_balance.append((highest_existing_charge_of_identified_ion[compound]-s)*A_{s}_{i}_concentration)')
                     #Accumulating variables for mass balance 
                     exec(f'accumulated_variables_for_mass_balance.append(A_{s}_{i}_concentration)')
                     #Accumulating variables for final proton concentration
@@ -186,14 +185,14 @@ compound_charge = {
 
 #Dcionary of the highest known charge of the compound when it is undissociated
 highest_existing_charge_of_compounds={
-    "PO4": 0,
-    "BO3": 0,
-    "NO3": 0,
+    "H3PO4": 0,
+    "H3BO3": 0,
+    "HNO3": 0,
     "H2SO4": 0,
-    "Cl" : 0,
+    "HCl" : 0,
     "NH4" : 1}
 
-def find_acid(ions_concentration:dict, acids_pKa:dict)->tuple:
+def find_acid(ions_concentration:dict, acids_pKa:dict,highest_existing_charge_of_compounds:dict)->tuple:
     """
     Identify acids or their deprotonated forms, and return two dictionaries. One where the keys are the identified ions/acids 
     and attribute to them the pKas of the acid they're associated, the second with the same keys but values being the number of 
@@ -204,15 +203,18 @@ def find_acid(ions_concentration:dict, acids_pKa:dict)->tuple:
     acids_pKa (dict): A dictionary with acid names as keys and their pKa values as lists.
 
     Returns:
-    tuple with two dictionaries 
+    tuple with three dictionaries 
     1.Dictionary with identified ions being the key and their corresponding values being the number of protons it lost 
     compared to its non-deprotonated form. 
     2.Dictionary where ions are the key and the values are the pkas of the acid
+    3.Dictionary where ions are the key and the values are the highest charge of the compound when it is undissociated
     """
     #Create  empty dictionary of number of protons lost by the identified ion/acid
     Degree_of_deprotonation={}
     #Creaty empty dictionary of ions with the corresponding pKa values of the acid they are associated to
     pKa_identified_ions={}
+    #Create empty dictionary of the highest known charge of the compound when it is undissociated
+    highest_existing_charge_of_identified_ion={}
     #Creates list of acids from pKa dictionary 
     acids = list(acids_pKa.keys())
     for ion, concentration in ions_concentration.items():
@@ -226,6 +228,7 @@ def find_acid(ions_concentration:dict, acids_pKa:dict)->tuple:
                 i=1
                 Degree_of_deprotonation[ion]=0
                 pKa_identified_ions[ion]=acids_pKa[acid]
+                highest_existing_charge_of_identified_ion[ion]=highest_existing_charge_of_compounds[acid]
                 continue
             else:
                 # Check if the ion/solute is a deprotonated form of any acid
@@ -235,6 +238,7 @@ def find_acid(ions_concentration:dict, acids_pKa:dict)->tuple:
                                 #print (f"Ion:{ion} was identified as being the deprotonated form of:", acid)
                                 pKa_identified_ions[ion]=acids_pKa[acid]
                                 Degree_of_deprotonation[ion]=int(acid[1])-1
+                                highest_existing_charge_of_identified_ion[ion]=highest_existing_charge_of_compounds[acid]
                                 i=1
                             else:
                                 continue
@@ -243,6 +247,7 @@ def find_acid(ions_concentration:dict, acids_pKa:dict)->tuple:
                                 #print (f"Ion:{ion} was identified as being the deprotonated form of:", acid)
                                 pKa_identified_ions[ion]=acids_pKa[acid]
                                 Degree_of_deprotonation[ion]=int(acid[1])
+                                highest_existing_charge_of_identified_ion[ion]=highest_existing_charge_of_compounds[acid]
                                 i=1
                             else:
                                 continue
@@ -252,23 +257,16 @@ def find_acid(ions_concentration:dict, acids_pKa:dict)->tuple:
                             #print(f"Ion:{ion} was identified as being the deprotonated form of:", acid)
                             Degree_of_deprotonation[ion]=int(acid[1])-int(ion[1])
                             pKa_identified_ions[ion]=acids_pKa[acid]
+                            highest_existing_charge_of_identified_ion[ion]=highest_existing_charge_of_compounds[acid]
 
 
         if i!=1: 
             #print("The ion or acid:", ion ,"could not be identified ")
             continue
-    return Degree_of_deprotonation, pKa_identified_ions
+    return Degree_of_deprotonation, pKa_identified_ions, highest_existing_charge_of_identified_ion
 
-# Test values 
-pKa_values={
-    "H3PO4": [2.12,7.21,12.32],
-    "H3BO3":[9.24,12.4,13.3],
-    "HNO3":[-1.4],
-    "H2SO4": [-3,1.9],
-    "HCl" : [-6.3],
-    "NH4" : [9.3],}
-
-Test_concentration_of_solution_2 = {
+# Test values for the function
+Test_concentration_of_solution = {
     "Ca": float(0),
     "Mg": float(0),
     "K": float(0),
@@ -284,7 +282,7 @@ Test_concentration_of_solution_2 = {
     "NH4" : float(0)}
 
 #Test
-#find_acid(Test_concentration_of_solution_2, pKa_values)
+#find_acid(Test_concentration_of_solution, pKa_values)
 
 
 #Testing the function

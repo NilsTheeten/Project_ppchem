@@ -19,32 +19,32 @@ while True:
 """
 
 
-def Refill_of_container(concentration_of_ions:dict, optimal_ion_concentrations:dict,*args:float)->dict[str: float]:
+def Refill_of_container(
+    concentration_of_ions: dict[str, float], 
+    optimal_ion_concentrations: dict[str, float], 
+    *args: float
+) -> dict[str, float]:
     """
-    This function (optionally) checks the concentration of ions in the solution, but otherwise refills the container with the ions that are below the optimal concentration.
+    Refill the container with ions that are below the optimal concentration.
+    
+    This function optionally checks if the concentration of ions in the solution is within an acceptable 
+    range of the optimal concentration. If specified, it skips ions that are within the acceptable deviation 
+    and refills only those that are below the optimal concentration.
 
     Parameters:
-    concentration_of_ions: A dictionary containing the concentration of ions in the solution.
-    optimal_ion_concentrations: A dictionary containing the optimal concentration of ions in the solution.
-    *args: A list of acceptable maximum percentage deviation from optimal concentration of ions in the solution.
+        concentration_of_ions (dict[str, float]): A dictionary containing the concentration of ions in the solution.
+        optimal_ion_concentrations (dict[str, float]): A dictionary containing the optimal concentration of ions in the solution.
+        *args (float): A list of acceptable maximum percentage deviations from the optimal concentration of ions in the solution.
 
     Returns:
-    A dictionary containing the ions and the quantities to add to the solution.
-    """
-    # This part checkS if the concentration of ions in the solution is within the acceptable range of the optimal concentration
-    """"
-    for arg in args:
-        arg=acceptable_maximum_percentage_deviation_from_optimal=
-    for ion, concentration in concentration_of_ions:
-        if (concentration-optimal_ion_concentrations[ion])/optimal_ion_concentrations[ion]*100>acceptable_maximum_percentage_deviation_from_optimal:
-            continue
-        return "Concentrations within solution are optimal"
+        dict[str, float]: A dictionary containing the ions and the quantities to add to the solution.
     """
     # This part calculates the quantities of ions to add to the solution
     Ion_quantities_to_add={}
-    for ion, concentration in concentration_of_ions:
+    for ion, concentration in concentration_of_ions.items():
             concentration_to_add=optimal_ion_concentrations[ion]-concentration_of_ions[ion]
-            Ion_quantities_to_add.update(ion, concentration_to_add)
+            Ion_quantities_to_add[ion]= concentration_to_add
     return Ion_quantities_to_add
+
             
     

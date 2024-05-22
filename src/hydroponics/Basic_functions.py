@@ -110,12 +110,19 @@ def get_atom_mass(atom_name: str) -> float:
 
 def get_molar_mass(salt: str) -> float:
     """
-    Returns the molar mass of a salt in g/mol. 
+    Calculate the molar mass of a salt in g/mol.
     
     Args:
-    - salt (str): The chemical formula of the salt.
-        Handels chemical formulas of type "Ca(NO3)2", "Ca(2+)(NO3-)2", "Ca2(NO3)2", "Ca(NO3)2(2+)".
-        Please do not use spaces in the formula and do not put brackets inside brackets.
+        salt (str): The chemical formula of the salt.
+            Handles chemical formulas of the following types:
+            - "Ca(NO3)2"
+            - "Ca(2+)(NO3-)2"
+            - "Ca2(NO3)2"
+            - "Ca(NO3)2(2+)"
+            Please do not use spaces in the formula and avoid putting brackets inside brackets.
+
+    Returns:
+        float: The molar mass of the salt in g/mol.
     """
     #Check for special characters
     def contains_special_characters(input_string:str):

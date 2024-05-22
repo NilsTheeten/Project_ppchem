@@ -76,6 +76,8 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.githubpages"
 ]
 
 templates_path = ["_templates"]
@@ -94,3 +96,4 @@ suppress_warnings = [
 
 html_theme = "furo"
 html_static_path = ["_static"]
+master_doc = "index"
