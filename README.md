@@ -84,6 +84,7 @@ pH = get_pH(solution)
 print(pH)
 ```
 See the "tutorial.ipynb" notebook for more complete examples.
+Or visit [hydroponics](https://nilstheeten.github.io/Project_ppchem/index.html) to see the full documentation
 
 ## 3. Datasets  
 This package uses data from the PRIF17 and...
