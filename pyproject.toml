@@ -3,6 +3,7 @@ requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
+version = "0.1.0"
 name = "better_hydroponics"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -36,7 +37,7 @@ keywords = ["hydroponics",
         "solution maker"
 
 ]
-dynamic = ["version"]
+
 
 [project.urls]
 source = "https://github.com/NilsTheeten/hydroponics"

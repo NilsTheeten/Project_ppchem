@@ -51,7 +51,7 @@ This usage example shows how to quickly use the package's main functionality: `g
 
 The following *pip command* can be used to install the python package. The package was made with python 3.10
 ```
-pip -m install better_hydroponics
+pip install better-hydroponics==0.1.0
 ```
   
 Be aware, the package uses the following dependencies:
