@@ -258,43 +258,51 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <p><img alt="Project Logo" src="_images/hydroponics_illustration.jpg" /></p>
+          <p><img alt="Project Logo" src="_images/Banner.webp" /></p>
 <p><img alt="Coverage Status" src="_images/coverage-badge.svg" /></p>
 <h1 align="center">
 Project Hydroponic simulation
 </h1>
 <br>
-<p>This python package aims to provide some basic tools to simulate hydroponic plant growing.🌱 Hydroponics is a farming method where plants grow without soil and instead use a solution containing the required mineral nutriments.👨‍🌾 This technique is already widely used but is development for farming on mars.🪐🚀</p>
-<p>In particular, this package allows you to simulate the concentration of minerals and the pH of hydroponic solutions.
+<p>This python package aims to provide some basic tools to simulate hydroponic plant growing.🌱 Hydroponics is a farming method where plants grow without soil and instead use a solution containing the required mineral nutriments.👨‍🌾 This technique is already widely used because it is more efficient in water usage and is in development for farming on mars.🪐🚀</p>
+<p>In particular, this package allows you to simulate the concentration of minerals and the pH of hydroponic solutions, determine the pH and check the solubility among others.
 See the “Basic Usage” section below and “example.ipynb” document for further examples and explainantions of the package.</p>
+<p>Also see the Githubwebpages associated with this project to see the full documentation: <a class="reference external" href="https://nilstheeten.github.io/Project_ppchem/index.html">hydroponics</a>.</p>
 <p>Learn more about hydropics with the following links:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://en.wikipedia.org/wiki/Hydroponics#:~:text=Hydroponics%20is%20a%20type%20of,solutions%20in%20an%20artificial%20environment">Wikipedia</a></p></li>
 <li><p><a class="reference external" href="https://www.nal.usda.gov/farms-and-agricultural-production-systems/hydroponics">USDA</a></p></li>
 <li><p><a class="reference external" href="https://www.nasa.gov/science-research/nasa-plant-researchers-explore-question-of-deep-space-food-crops/">NASA</a></p></li>
 </ul>
+<br>
 <section id="usage">
 <h1>0. Usage 🔥<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h1>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">hydroponics</span> <span class="kn">import</span> <span class="n">generate_report</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">hydroponics</span> <span class="k">as</span> <span class="nn">hp</span>
 
 <span class="n">plant_name</span> <span class="o">=</span> <span class="s2">&quot;Tomato&quot;</span>
-<span class="n">required_nutriments</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Na+&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span> <span class="s2">&quot;NO3(-)&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span> <span class="s2">&quot;K+&quot;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">}</span>
-<span class="n">solution</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Na+&quot;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span> <span class="s2">&quot;NO3(-)&quot;</span><span class="p">:</span> <span class="mf">0.6</span><span class="p">,</span> <span class="s2">&quot;K+&quot;</span><span class="p">:</span> <span class="mf">0.3</span><span class="p">}</span>
+<span class="n">required_nutriments</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Na+&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span> <span class="s2">&quot;NO3(-)&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span> <span class="s2">&quot;K+&quot;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">}</span> <span class="c1">#minerals needed by the plant</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Na+&quot;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span> <span class="s2">&quot;NO3(-)&quot;</span><span class="p">:</span> <span class="mf">0.6</span><span class="p">,</span> <span class="s2">&quot;K+&quot;</span><span class="p">:</span> <span class="mf">0.3</span><span class="p">}</span> <span class="c1">#composition of the solution {&quot;ion_name&quot;:conc. [g/L]}</span>
+<span class="n">analysed_ions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Na+&quot;</span><span class="p">,</span> <span class="s2">&quot;NO3(-)&quot;</span><span class="p">,</span> <span class="s2">&quot;K+&quot;</span><span class="p">]</span> <span class="c1">#ions for which the conc. will be analysed</span>
 <span class="n">volume</span> <span class="o">=</span> <span class="mi">2</span> <span class="c1">#L</span>
 <span class="n">growth_time</span> <span class="o">=</span> <span class="mi">20</span> <span class="c1">#days</span>
-<span class="n">forbidden_ions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Cl-&quot;</span><span class="p">]</span>
+<span class="n">forbidden_ions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Cl-&quot;</span><span class="p">]</span> <span class="c1">#ions you don&#39;t want in the solution</span>
 
 <span class="c1"># Generate an awsome simulation report (PDF)</span>
-<span class="n">generate_report</span><span class="p">(</span><span class="n">plant_name</span><span class="p">,</span> <span class="n">required_nutriments</span><span class="p">,</span> <span class="n">solution</span><span class="p">,</span> <span class="n">volume</span><span class="p">,</span> <span class="n">growth_time</span><span class="p">,</span> <span class="n">forbidden_ions</span> <span class="o">=</span> <span class="n">forbidden_ions</span><span class="p">)</span>
+<span class="n">hp</span><span class="o">.</span><span class="n">generate_report</span><span class="p">(</span><span class="n">plant_name</span><span class="p">,</span> <span class="n">required_nutriments</span><span class="p">,</span> <span class="n">growth_time</span><span class="p">,</span> <span class="n">analysed_ions</span><span class="p">,</span> <span class="n">solution</span><span class="p">,</span> <span class="n">volume</span><span class="p">,</span> <span class="n">forbidden_ions</span> <span class="o">=</span> <span class="n">forbidden_ions</span><span class="p">)</span>
 
 </pre></div>
 </div>
-<p>This usage example shows how to quickly use the package’s main functionality: <code class="docutils literal notranslate"><span class="pre">generate_report</span></code> that will provide a lot of essential informations for a simulation.</p>
+<p>This usage example shows how to quickly use the package’s main functionality: <code class="docutils literal notranslate"><span class="pre">generate_report</span></code> that will provide a lot of essential informations of the simulation. 📝</p>
+<br>
 </section>
 <section id="installation">
 <h1>1. Installation 👩‍💻<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h1>
-<p>The following pip command can be used to install the python package. The package was made with python 3.10</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="o">-</span><span class="n">m</span> <span class="n">install</span> <span class="n">hydroponics</span>
+<blockquote>
+<div><p>Everything is just one pip install away - philippe schwaller
+<br></p>
+</div></blockquote>
+<p>The following <em>pip command</em> can be used to install the python package. The package was made with python 3.10</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="o">-</span><span class="n">m</span> <span class="n">install</span> <span class="n">better_hydroponics</span>
 </pre></div>
 </div>
 <p>Be aware, the package uses the following dependencies:</p>
@@ -306,56 +314,61 @@ See the “Basic Usage” section below and “example.ipynb” document for fur
 <li><p>openpyxl (3.1.2)</p></li>
 </ul>
 <p>Please install the dependencies with their according <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span></code> commands in the right environment.</p>
+<br>
 </section>
-<hr class="docutils" />
 <section id="basic-usage">
 <h1>2. Basic Usage<a class="headerlink" href="#basic-usage" title="Link to this heading">¶</a></h1>
 <p>The package uses python dictionaries to store the concentration of the different salts/ion in the solution. By default concentrations are given in [g/L]. However different functions exist to convert g/L to mol/L and inversly.</p>
-<p>To determine the quantity of each salt to add to the solution to obain the desired concentration of each ion one can use the <code class="docutils literal notranslate"><span class="pre">make_solution</span></code> function. This function checks the solubility of the salt.</p>
+<p>Start by importing the package:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">hydroponics</span> <span class="k">as</span> <span class="nn">hp</span>
+</pre></div>
+</div>
+<p>To determine the quantity of each salt to add to the solution to obain the desired concentration of each ion one can use the <code class="docutils literal notranslate"><span class="pre">make_solution</span></code> function. This function checks the solubility of the salt. 🧑‍🔬</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ion_composition</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;K+&quot;</span><span class="p">:</span><span class="mf">0.1</span><span class="p">,</span> <span class="s2">&quot;Cl-&quot;</span><span class="p">:</span> <span class="mf">0.3</span><span class="p">,</span> <span class="s2">&quot;H2PO4(-)&quot;</span><span class="p">:</span><span class="mf">0.5</span><span class="p">,</span> <span class="s2">&quot;Ca(2+)&quot;</span><span class="p">:</span><span class="mf">0.4</span><span class="p">}</span> <span class="c1">#desired concentrations in [g/L]</span>
 <span class="n">volume</span> <span class="o">=</span> <span class="mi">10</span> <span class="c1">#L</span>
 <span class="n">forbidden_ions</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Li+&quot;</span><span class="p">,</span> <span class="s2">&quot;SO4(2-)&quot;</span><span class="p">]</span>
 
-<span class="n">salts_to_add</span> <span class="o">=</span> <span class="n">make_solution</span><span class="p">(</span><span class="n">ion_composition</span><span class="p">,</span> <span class="n">volume</span><span class="p">,</span> <span class="n">forbidden_ions</span><span class="p">)</span>
+<span class="n">salts_to_add</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">make_solution</span><span class="p">(</span><span class="n">ion_composition</span><span class="p">,</span> <span class="n">volume</span><span class="p">,</span> <span class="n">forbidden_ions</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">salts_to_add</span><span class="p">)</span>
+
 </pre></div>
 </div>
 <p>One can visualise the evolution of the concentration of the ions as the plant grows with the <code class="docutils literal notranslate"><span class="pre">plot_graph</span></code> function.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">volume</span> <span class="o">=</span> <span class="mi">5</span> <span class="c1">#L</span>
-<span class="o">...</span>
-<span class="n">plot_graph</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#Define the variables</span>
+<span class="n">solution</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Na+&quot;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span> <span class="s2">&quot;NO3(-)&quot;</span><span class="p">:</span> <span class="mf">0.6</span><span class="p">,</span> <span class="s2">&quot;K+&quot;</span><span class="p">:</span> <span class="mf">0.3</span><span class="p">}</span> <span class="c1">#composition of the solution {&quot;ion_name&quot;:conc. [g/L]}</span>
+<span class="n">required_nutriments</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Na+&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span> <span class="s2">&quot;NO3(-)&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span> <span class="s2">&quot;K+&quot;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">}</span> <span class="c1">#minerals needed by the plant</span>
+<span class="n">growth_time</span> <span class="o">=</span> <span class="mi">20</span> <span class="c1">#days</span>
+<span class="n">volume</span> <span class="o">=</span> <span class="mi">5</span> <span class="c1">#L</span>
+
+<span class="c1">#plot a figure that shows the concentration of ions as a function of time.</span>
+<span class="c1">#The figure is directly downloaded in the current directory.</span>
+<span class="n">hp</span><span class="o">.</span><span class="n">plot_graph</span><span class="p">(</span><span class="n">solution</span><span class="p">,</span> <span class="s2">&quot;ion&quot;</span><span class="p">,</span> <span class="n">required_nutriments</span><span class="p">,</span> <span class="n">growth_time</span><span class="p">,</span> <span class="n">volume</span><span class="p">)</span>
+
 </pre></div>
 </div>
-<p>One can determine the pH of the solution given the concentration  of the ions with the <code class="docutils literal notranslate"><span class="pre">get_pH</span></code>function:</p>
+<p>One can determine the pH of the solution given the concentration  of the ions with the <code class="docutils literal notranslate"><span class="pre">pH_approximation</span></code> function:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">solution</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;K+&quot;</span><span class="p">:</span><span class="mf">0.1</span><span class="p">,</span> <span class="s2">&quot;Cl-&quot;</span><span class="p">:</span> <span class="mf">0.3</span><span class="p">,</span> <span class="s2">&quot;H2PO4(-)&quot;</span><span class="p">:</span><span class="mf">0.5</span><span class="p">,</span> <span class="s2">&quot;Ca(2+)&quot;</span><span class="p">:</span><span class="mf">0.4</span><span class="p">}</span>
-<span class="n">pH</span> <span class="o">=</span> <span class="n">get_pH</span><span class="p">(</span><span class="n">solution</span><span class="p">)</span>
+<span class="n">temperature</span> <span class="o">=</span> <span class="mi">25</span> <span class="c1">#°C</span>
+<span class="n">pH</span> <span class="o">=</span> <span class="n">hp</span><span class="o">.</span><span class="n">pH_approximation</span><span class="p">(</span><span class="n">solution</span><span class="p">,</span> <span class="n">temperature</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">pH</span><span class="p">)</span>
 </pre></div>
 </div>
+<br>
 <p>See the “tutorial.ipynb” notebook for more complete examples.</p>
+<p>Or visit <a class="reference external" href="https://nilstheeten.github.io/Project_ppchem/index.html">hydroponics</a> to see the full documentation of the package.</p>
+<br>
 </section>
 <section id="datasets">
 <h1>3. Datasets<a class="headerlink" href="#datasets" title="Link to this heading">¶</a></h1>
-<p>This package uses data from the PRIF17 and…</p>
+<p>This package uses data from the PRIF17 (<a class="reference external" href="https://www.agroscope.admin.ch/agroscope/en/home/topics/plant-production/field-crops/Pflanzenernaehrung/grud.html">link</a>) and the wikipedia page about solubility (<a class="reference external" href="https://en.wikipedia.org/wiki/Solubility_table">wiki</a>).</p>
+<p>Accuracy of the results of the package are not guaranteed.</p>
 <p>Some solutions and plant compositions are predefined (bell pepper 🫑, cucumber 🥒 and eggplant 🍆), please define a new dict or complete the excel file to use other solutions and new plants.</p>
+<br>
 </section>
-<hr class="docutils" />
 <section id="licence-and-references">
 <h1>4. Licence and References<a class="headerlink" href="#licence-and-references" title="Link to this heading">¶</a></h1>
 <p>This package is under MIT license.</p>
 <p>Please click on the MIT sign for further information</p>
-<p>Implementation/useful tools:</p>
-<p>Modelisations of salt concentrations/pH (needs to be 6-7, depends on plant) over time
-Recommend salts to add/quantity/seller given a plant an the mixture of salts in the solution
-Define optimal composition
-Difine loss of salts depending on plant growth
-Depending on number/type of plant, how much solution must be added
-Volume is constant (automatic refilling of bassin with distilled water)
-Modelise buffer solution
-Modelisation: We have a closed system where plants can grow using water und salts, after time t=growth_time they are replaced by a new baby plant</p>
-<p>Define constant volume of water in the tank [L] and constant T (298K)
-Define optimal concentration of the different salts (Hoagland)
-Choose plant –&gt; return how much salt to add when, figures of salt concentration over time, …</p>
 <div class="toctree-wrapper compound">
 <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
