@@ -64,7 +64,7 @@ def pH_approximation (concentration_of_ions_in_solution:dict, temperature:float)
                 exec(f"dissociated_metal_{l}_concentration]=symbols(dissociated_metal_{l}_concentration)")
                 exec(f"undissociated_metal_compound_{l}_concentration=symbols(undissociated_metal_compound_{l}_concentration)")
                 #Equation of dissociation equilibrium
-                exec(f"equation_Ksp = Eq((dissociated_metal_compound_{l}_concentration*OH_minus_concentration**(compound_charge[compound]))/(undissociated_metal_compound_{l}_concentration), Ksp_values[compound])")
+                exec(f"equation_Ksp = Eq((dissociated_metal_compound_{l}_concentration*OH_minus_concentration**(compound_charge[compound])), Ksp_values[compound])")
                 equations.append(equation_Ksp)
                 # Accumulating variables for charge balance. 
                 accumulated_variables_for_charge_balance.append(compound_charge[compound]*f'dissociated_metal_{l}_concentration')
