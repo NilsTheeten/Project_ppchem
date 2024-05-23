@@ -22,8 +22,8 @@ def load_from_data(file_name):
     # Get the directory of the current file
     current_dir = os.path.dirname(os.path.realpath(__file__))
     # Construct the absolute path to the CSV file
-    path = os.path.join(current_dir, '..\\..\\data', file_name)
-    return path
+    final_path = current_dir+'\data\\'+ file_name
+    return final_path
 
 def import_solution_data(solution_name: str) -> dict:
     """
